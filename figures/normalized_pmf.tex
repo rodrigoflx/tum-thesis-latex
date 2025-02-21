@@ -1,0 +1,37 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        domain=1:100,
+        samples=100,
+        xlabel={Rank},
+        ylabel={Probability},
+        ymin=0, ymax=0.1,
+        xmin=0, xmax=100,
+        axis lines=left,
+        enlargelimits=upper,
+        width=10cm,
+        height=6cm,
+        grid=major
+    ]
+    % Plot the Zipfian PMF
+    \addplot[name path=A, blue, thick] {1/(x*ln(100))};
+    \path[name path=B] (axis cs:0,0) -- (axis cs:100,0);
+
+    % Fill areas under the curve
+    \pgfplotsinvokeforeach{1,11,...,91}{
+        \addplot[red, fill opacity=0.2] fill between[of=A and B, soft clip={domain=#1:#1+10}];
+    }
+
+
+    % Add vertical lines to separate zones
+    \foreach \x in {10,20,...,90} {
+        \addplot[dashed, gray] coordinates {(\x,0) (\x,0.1)};
+    }
+
+    % Add vertical lines at the borders of the intervals from curve to x-axis
+    \foreach \x in {10,20,...,100} {
+        \addplot[black, thick] coordinates {(\x,{1/(\x*ln(100))}) (\x,0)};
+    }
+
+
+    \end{axis}
+\end{tikzpicture}

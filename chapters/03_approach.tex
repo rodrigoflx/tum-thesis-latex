@@ -1,0 +1,140 @@
+\chapter{Approach}\label{chapter:approach}
+
+\pgfplotstableread[col sep=comma]{data/sys_lit_rev.csv}\mytable
+
+\newcommand{\drawPie}[1]{%
+  % Extract the conference name
+  \pgfplotstablegetelem{#1}{Venue}\of\mytable
+  \let\venue\pgfplotsretval
+
+  % Extract the benchmark counts
+  \pgfplotstablegetelem{#1}{YCSB}\of\mytable
+  \let\valYCSB\pgfplotsretval
+
+  \pgfplotstablegetelem{#1}{Sysbench}\of\mytable
+  \let\valSysbench\pgfplotsretval
+
+  \pgfplotstablegetelem{#1}{FIO}\of\mytable
+  \let\valFIO\pgfplotsretval
+
+  \pgfplotstablegetelem{#1}{OLTPBench}\of\mytable
+  \let\valOLTP\pgfplotsretval
+
+  \pgfplotstablegetelem{#1}{DBGen}\of\mytable
+  \let\valDBGen\pgfplotsretval
+
+  \begin{tikzpicture}[baseline=(current bounding box.north)]
+    % Title for the conference above the pie
+    \node[font=\bfseries] at (0,1.5) {\venue};
+
+    \pie[
+      /tikz/nodes={font=\footnotesize},
+      color={blue!50!white, red!50!white, green!50!white, orange!50!white, purple!50!white},
+      sum=auto,
+      radius=1,
+      % <<-- Hide slices (and labels) for zero values:
+      zero slice/.style={draw=none, text=none}
+    ]{
+      \valYCSB/YCSB,
+      \valSysbench/Sysbench,
+      \valFIO/FIO,
+      \valOLTP/OLTPBench,
+      \valDBGen/DBGen
+    }
+  \end{tikzpicture}
+}
+
+The goal of this thesis is to identify the most widely used frameworks for generating zipfian synthetic data in the systems programming and database community.
+To achieve this, a systematic review of current approaches was conducted with respect to relevancy among high-impact conferences and journals. The following sections describe
+\begin{enumerate}
+    \item the \textbf{research approach} used to identify the frameworks,
+    \item the \textbf{common frameworks} recognized from the search along with short descriptions
+    \item the \textbf{popularity and impact} of those tools
+\end{enumerate}
+
+% TODO : Think whether this belongs here or in evaluation
+Afterwards, the \textbf{evaluation criteria} used to compare the frameworks are presented and clarified, along with a presentation of 
+the tool used to compile those results.
+
+
+\section{Research Approach}
+To identify relevant frameworks used by the systems programming and database community, first the scope of 
+venues and journals was defined. The list is comprised of:
+\begin{center} % Centers the columns as a whole
+    \begin{minipage}{0.8\linewidth} % Optional: restrict width for a nicer look
+      \begin{multicols}{2} % Specify 2 columns
+        \begin{itemize}
+          \item \ac{PVLDB}
+          \item \ac{SIGMOD}
+          \item \ac{CIDR}
+          \item \ac{OSDI}
+          \item \ac{NSDI}
+          \item \ac{FAST}
+        \end{itemize}
+      \end{multicols}
+      \label{list:conferences}
+    \end{minipage}
+\end{center}
+
+% TODO : How can I justify the selection of conferences here. This seems very arbitrary
+These conferences were chosen due to their high selectivity and special relevancy for storage technology research, where there is a prevalence of 
+standardized IO benchmarks. The search was conducted broadly following the steps indicated in \parencite{bramerSystematicApproachSearching2018}, as defined below: 
+\begin{enumerate}
+    \item Word search on keyword search matrix (see table~\ref{tab:keyword_search_matrix})
+    \item Identify the frameworks used in the papers
+    \item Extended keyword search, this time adding the frameworks identified in the previous step
+\end{enumerate} 
+
+The first step suggests the use of a keyword matrix. This works by choosing appropriate keywords
+which refer to the topic of interest. Then for each such keyword, synonyms are used to improve the accuracy and scope of the search. It's defined below as:
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|l|r|r|}
+      \hline
+       & \multicolumn{1}{c|}{Keyword 1} & \multicolumn{1}{c|}{Keyword 2} & \multicolumn{1}{c|}{Keyword 3} \\ \hline
+       \parbox[t]{3mm}{\multirow{3}{*}{\rotatebox[origin=r]{90}{synonyms}}}
+       & zipf   &   benchmark     &    synthetic      \\
+       & zipfian   &   workload     &    generated      \\
+       &    &   evaluation     &    sampled      \\
+       &    &   empirical     &    sampler      \\
+       &   &   dataset     &         \\ \hline
+    \end{tabular}
+    \caption{Keyword search matrix}
+    \label{tab:keyword_search_matrix}
+  \end{table} 
+
+The columns are the keywords which are boolean OR'ed, whereas the rows are boolean AND'ed.
+This means that at least one word of each column should appear in the search.
+
+These queries where then run for the conferences and journals listed before on an unrestricted timescale. The databases consulted are
+\begin{itemize}
+    \item IEEE Xplore
+    \item ACM Digital Library
+    \item DBLP
+    \item Google Scholar
+\end{itemize}
+
+On a first phase, the following frameworks were identified among the top 20 results of each conference
+\begin{center}
+    \begin{tabular}{|l|}
+        \hline
+        \textbf{Frameworks} \\ \hline\hline
+        Yahoo! Cloud Serving Benchmark \\ \hline
+        Flexible I/O Tester \\ \hline
+        Sysbench \\ \hline
+        OLTP-Bench \\ \hline
+        DBGen \\ \hline
+    \end{tabular}
+\end{center}
+
+These frameworks were then searched with the same keyword matrix and their name as a last keyword. This has yielded the following results:
+
+\begin{figure}[htb]
+  \centering
+  \begin{tabular}{ccc}
+    \drawPie{0} & \drawPie{1} & \drawPie{2} \\
+    \drawPie{3} & \drawPie{4} & \drawPie{5} \\
+  \end{tabular}
+  \caption{Pie charts for each conference (excluding Web Polygraph and pgBench).}
+\end{figure}

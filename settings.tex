@@ -9,25 +9,33 @@
 \usepackage[%
   backend=biber,
   url=false,
-  style=alphabetic,
+  style=ieee,
   maxnames=4,
   minnames=3,
   maxbibnames=99,
   giveninits,
-  uniquename=init]{biblatex} % TODO: adapt citation style
+  uniquename=init]{biblatex}
 \usepackage{graphicx}
 \usepackage{scrhack} % necessary for listings package
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{pgf-pie}
 \usepackage{listings}
 \usepackage{lstautogobble}
 \usepackage{tikz}
+\usepackage{pgffor}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-\usepackage{booktabs}
 \usepackage[final]{microtype}
+\usepackage{booktabs}
 \usepackage{caption}
 \usepackage[printonlyused]{acronym}
 \usepackage{ifthen}
 
+% Setting for pgfplots
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{calc}
 
 \hypersetup{hidelinks} % removes colored boxes around references and links
 
@@ -88,6 +96,8 @@
 \definecolor{TUMAccentGreen}{HTML}{A2AD00}
 \definecolor{TUMAccentLightBlue}{HTML}{98C6EA}
 \definecolor{TUMAccentBlue}{HTML}{64A0C8}
+
+\newcommand{\STAB}[1]{\begin{tabular}{@{}c@{}}#1\end{tabular}}
 
 % Settings for pgfplots
 \pgfplotsset{compat=newest}
