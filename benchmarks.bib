@@ -1,0 +1,165 @@
+@online{1FioFlexible,
+  title = {1. Fio - {{Flexible I}}/{{O}} Tester Rev. 3.38 — Fio 3.38-19-Gd1eb Documentation},
+  url = {https://fio.readthedocs.io/en/latest/fio_doc.html},
+  urldate = {2025-01-16},
+  file = {/home/rodff/Zotero/storage/BLGZI3Z2/fio_doc.html}
+}
+
+@online{AuctionMarkOLTPBenchmark,
+  title = {{{AuctionMark}}: {{An OLTP Benchmark}} for {{Shared-Nothing Database Management Systems}} « {{H-Store}}},
+  shorttitle = {{{AuctionMark}}},
+  url = {https://hstore.cs.brown.edu/projects/auctionmark/},
+  urldate = {2025-02-22},
+  langid = {american},
+  keywords = {notion},
+  file = {/home/rodff/Zotero/storage/FSEPT9E7/auctionmark.html}
+}
+
+@inproceedings{cooperBenchmarkingCloudServing2010,
+  title = {Benchmarking Cloud Serving Systems with {{YCSB}}},
+  booktitle = {Proceedings of the 1st {{ACM}} Symposium on {{Cloud}} Computing},
+  author = {Cooper, Brian F. and Silberstein, Adam and Tam, Erwin and Ramakrishnan, Raghu and Sears, Russell},
+  date = {2010-06-10},
+  series = {{{SoCC}} '10},
+  pages = {143--154},
+  publisher = {Association for Computing Machinery},
+  location = {New York, NY, USA},
+  doi = {10.1145/1807128.1807152},
+  url = {https://dl.acm.org/doi/10.1145/1807128.1807152},
+  urldate = {2025-02-22},
+  abstract = {While the use of MapReduce systems (such as Hadoop) for large scale data analysis has been widely recognized and studied, we have recently seen an explosion in the number of systems developed for cloud data serving. These newer systems address "cloud OLTP" applications, though they typically do not support ACID transactions. Examples of systems proposed for cloud serving use include BigTable, PNUTS, Cassandra, HBase, Azure, CouchDB, SimpleDB, Voldemort, and many others. Further, they are being applied to a diverse range of applications that differ considerably from traditional (e.g., TPC-C like) serving workloads. The number of emerging cloud serving systems and the wide range of proposed applications, coupled with a lack of apples-to-apples performance comparisons, makes it difficult to understand the tradeoffs between systems and the workloads for which they are suited. We present the "Yahoo! Cloud Serving Benchmark" (YCSB) framework, with the goal of facilitating performance comparisons of the new generation of cloud data serving systems. We define a core set of benchmarks and report results for four widely used systems: Cassandra, HBase, Yahoo!'s PNUTS, and a simple sharded MySQL implementation. We also hope to foster the development of additional cloud benchmark suites that represent other classes of applications by making our benchmark tool available via open source. In this regard, a key feature of the YCSB framework/tool is that it is extensible--it supports easy definition of new workloads, in addition to making it easy to benchmark new systems.},
+  isbn = {978-1-4503-0036-0},
+  keywords = {notion},
+  file = {/home/rodff/Zotero/storage/IILNWYNW/Cooper et al. - 2010 - Benchmarking cloud serving systems with YCSB.pdf}
+}
+
+@article{difallahOLTPBenchExtensibleTestbed2013,
+  title = {{{OLTP-Bench}}: An Extensible Testbed for Benchmarking Relational Databases},
+  shorttitle = {{{OLTP-Bench}}},
+  author = {Difallah, Djellel Eddine and Pavlo, Andrew and Curino, Carlo and Cudre-Mauroux, Philippe},
+  date = {2013-12-01},
+  journaltitle = {Proc. VLDB Endow.},
+  volume = {7},
+  number = {4},
+  pages = {277--288},
+  issn = {2150-8097},
+  doi = {10.14778/2732240.2732246},
+  url = {https://doi.org/10.14778/2732240.2732246},
+  urldate = {2025-02-22},
+  abstract = {Benchmarking is an essential aspect of any database management system (DBMS) effort. Despite several recent advancements, such as pre-configured cloud database images and database-as-a-service (DBaaS) offerings, the deployment of a comprehensive testing platform with a diverse set of datasets and workloads is still far from being trivial. In many cases, researchers and developers are limited to a small number of workloads to evaluate the performance characteristics of their work. This is due to the lack of a universal benchmarking infrastructure, and to the difficulty of gaining access to real data and workloads. This results in lots of unnecessary engineering efforts and makes the performance evaluation results difficult to compare. To remedy these problems, we present OLTP-Bench, an extensible "batteries included" DBMS benchmarking testbed. The key contributions of OLTP-Bench are its ease of use and extensibility, support for tight control of transaction mixtures, request rates, and access distributions over time, as well as the ability to support all major DBMSs and DBaaS platforms. Moreover, it is bundled with fifteen workloads that all differ in complexity and system demands, including four synthetic workloads, eight workloads from popular benchmarks, and three workloads that are derived from real-world applications. We demonstrate through a comprehensive set of experiments conducted on popular DBMS and DBaaS offerings the different features provided by OLTP-Bench and the effectiveness of our testbed in characterizing the performance of database services.},
+  keywords = {notion}
+}
+
+@article{kallmanHstoreHighperformanceDistributed2008,
+  title = {H-Store: A High-Performance, Distributed Main Memory Transaction Processing System},
+  shorttitle = {H-Store},
+  author = {Kallman, Robert and Kimura, Hideaki and Natkins, Jonathan and Pavlo, Andrew and Rasin, Alexander and Zdonik, Stanley and Jones, Evan P. C. and Madden, Samuel and Stonebraker, Michael and Zhang, Yang and Hugg, John and Abadi, Daniel J.},
+  date = {2008-08},
+  journaltitle = {Proceedings of the VLDB Endowment},
+  shortjournal = {Proc. VLDB Endow.},
+  volume = {1},
+  number = {2},
+  pages = {1496--1499},
+  issn = {2150-8097},
+  doi = {10.14778/1454159.1454211},
+  url = {https://dl.acm.org/doi/10.14778/1454159.1454211},
+  urldate = {2025-01-16},
+  abstract = {Our previous work has shown that architectural and application shifts have resulted in modern OLTP databases increasingly falling short of optimal performance [10]. In particular, the availability of multiple-cores, the abundance of main memory, the lack of user stalls, and the dominant use of stored procedures are factors that portend a clean-slate redesign of RDBMSs. This previous work showed that such a redesign has the potential to outperform legacy OLTP databases by a significant factor. These results, however, were obtained using a bare-bones prototype that was developed just to demonstrate the potential of such a system. We have since set out to design a more complete execution platform, and to implement some of the ideas presented in the original paper. Our demonstration presented here provides insight on the development of a distributed main memory OLTP database and allows for the further study of the challenges inherent in this operating environment.},
+  langid = {english},
+  file = {/home/rodff/Zotero/storage/7UZTKYV7/Kallman et al. - 2008 - H-store a high-performance, distributed main memory transaction processing system.pdf}
+}
+
+@online{kipfSOSDBenchmarkLearned2019,
+  title = {{{SOSD}}: {{A Benchmark}} for {{Learned Indexes}}},
+  shorttitle = {{{SOSD}}},
+  author = {Kipf, Andreas and Marcus, Ryan and family=Renen, given=Alexander, prefix=van, useprefix=false and Stoian, Mihail and Kemper, Alfons and Kraska, Tim and Neumann, Thomas},
+  date = {2019-11-29},
+  eprint = {1911.13014},
+  eprinttype = {arXiv},
+  doi = {10.48550/arXiv.1911.13014},
+  url = {http://arxiv.org/abs/1911.13014},
+  urldate = {2024-11-19},
+  abstract = {A groundswell of recent work has focused on improving data management systems with learned components. Specifically, work on learned index structures has proposed replacing traditional index structures, such as B-trees, with learned models. Given the decades of research committed to improving index structures, there is significant skepticism about whether learned indexes actually outperform state-of-the-art implementations of traditional structures on real-world data. To answer this question, we propose a new benchmarking framework that comes with a variety of real-world datasets and baseline implementations to compare against. We also show preliminary results for selected index structures, and find that learned models indeed often outperform state-of-the-art implementations, and are therefore a promising direction for future research.},
+  pubstate = {prepublished},
+  keywords = {Computer Science - Data Structures and Algorithms,Computer Science - Databases,Computer Science - Machine Learning},
+  file = {/home/rodff/Zotero/storage/387NBFWP/Kipf et al. - 2019 - SOSD A Benchmark for Learned Indexes.pdf;/home/rodff/Zotero/storage/QV3P98AS/1911.html}
+}
+
+@software{kopytovAkopytovSysbench2025,
+  title = {Akopytov/Sysbench},
+  author = {Kopytov, Alexey},
+  date = {2025-01-16T06:14:59Z},
+  origdate = {2015-03-07T08:27:40Z},
+  url = {https://github.com/akopytov/sysbench},
+  urldate = {2025-01-16},
+  abstract = {Scriptable database and system performance benchmark},
+  keywords = {benchmark,console,freebsd,linux,lua,luajit,macos,micro-benchmarks,mysql,oltp,postgresql,sysbench}
+}
+
+@article{leisHowGoodAre2015,
+  title = {How Good Are Query Optimizers, Really?},
+  author = {Leis, Viktor and Gubichev, Andrey and Mirchev, Atanas and Boncz, Peter and Kemper, Alfons and Neumann, Thomas},
+  date = {2015-11-01},
+  journaltitle = {Proc. VLDB Endow.},
+  volume = {9},
+  number = {3},
+  pages = {204--215},
+  issn = {2150-8097},
+  doi = {10.14778/2850583.2850594},
+  url = {https://doi.org/10.14778/2850583.2850594},
+  urldate = {2024-11-19},
+  abstract = {Finding a good join order is crucial for query performance. In this paper, we introduce the Join Order Benchmark (JOB) and experimentally revisit the main components in the classic query optimizer architecture using a complex, real-world data set and realistic multi-join queries. We investigate the quality of industrial-strength cardinality estimators and find that all estimators routinely produce large errors. We further show that while estimates are essential for finding a good join order, query performance is unsatisfactory if the query engine relies too heavily on these estimates. Using another set of experiments that measure the impact of the cost model, we find that it has much less influence on query performance than the cardinality estimates. Finally, we investigate plan enumeration techniques comparing exhaustive dynamic programming with heuristic algorithms and find that exhaustive enumeration improves performance despite the sub-optimal cardinality estimates.},
+  file = {/home/rodff/Zotero/storage/3VURMCL9/Leis et al. - 2015 - How good are query optimizers, really.pdf}
+}
+
+@online{NavigatingDatabasePerformance2024,
+  title = {Navigating the {{Database Performance Landscape}}: {{A Comprehensive Guide}} to {{Database Benchmarking Suites}}},
+  date = {2024},
+  url = {https://benchant.com/blog/benchmarking-suites},
+  organization = {benchANT}
+}
+
+@online{Pgbench2024,
+  title = {Pgbench},
+  date = {2024-11-21T14:03:57},
+  url = {https://www.postgresql.org/docs/17/pgbench.html},
+  urldate = {2025-01-20},
+  abstract = {pgbench pgbench — run a benchmark test on PostgreSQL Synopsis pgbench -i [option...] [dbname] pgbench [option...] [dbname] Description pgbench is …},
+  langid = {english},
+  organization = {PostgreSQL Documentation},
+  file = {/home/rodff/Zotero/storage/BSZ57ELS/pgbench.html}
+}
+
+@article{rousskovHighperformanceBenchmarkingWeb2004,
+  title = {High-Performance Benchmarking with Web Polygraph},
+  author = {Rousskov, Alex and Wessels, Duane},
+  date = {2004-02-01},
+  journaltitle = {Softw. Pract. Exper.},
+  volume = {34},
+  number = {2},
+  pages = {187--211},
+  issn = {0038-0644},
+  doi = {10.1002/spe.576},
+  url = {https://doi.org/10.1002/spe.576},
+  urldate = {2025-02-21},
+  abstract = {This paper presents the design and implementation of Web Polygraph, a tool for benchmarking HTTP intermediaries. We discuss various challenges involved in simulating Web traffic and in developing a portable, high-performance tool for generating such traffic. Polygraph's simulation models, as well as our experiences with developing and running the benchmark, may be useful for Web proxy developers, performance analysts, and researchers interested in Web traffic simulation.},
+  keywords = {notion}
+}
+
+@inproceedings{vanakenBenchPressDynamicWorkload2015a,
+  title = {{{BenchPress}}: {{Dynamic Workload Control}} in the {{OLTP-Bench Testbed}}},
+  shorttitle = {{{BenchPress}}},
+  booktitle = {Proceedings of the 2015 {{ACM SIGMOD International Conference}} on {{Management}} of {{Data}}},
+  author = {Van Aken, Dana and Difallah, Djellel E. and Pavlo, Andrew and Curino, Carlo and Cudré-Mauroux, Philippe},
+  date = {2015-05-27},
+  series = {{{SIGMOD}} '15},
+  pages = {1069--1073},
+  publisher = {Association for Computing Machinery},
+  location = {New York, NY, USA},
+  doi = {10.1145/2723372.2735354},
+  url = {https://dl.acm.org/doi/10.1145/2723372.2735354},
+  urldate = {2025-01-20},
+  abstract = {Benchmarking is an essential activity when choosing database products, tuning systems, and understanding the trade-offs of the underlying engines. But the workloads available for this effort are often restrictive and non-representative of the ever changing requirements of the modern database applications. We recently introduced OLTP-Bench, an extensible testbed for benchmarking relational databases that is bundled with 15 workloads. The key features that set this framework apart is its ability to tightly control the request rate and dynamically change the transaction mixture. This allows an administrator to compose complex execution targets that recreate real system loads, and opens the doors to new research directions involving tuning for special execution patterns and multi-tenancy. In this demonstration, we highlight OLTP-Bench's important features through the BenchPress game. It allows users to control the benchmark behavior in real time for multiple database management systems.},
+  isbn = {978-1-4503-2758-9},
+  file = {/home/rodff/Zotero/storage/TFHWWYTU/Van Aken et al. - 2015 - BenchPress Dynamic Workload Control in the OLTP-Bench Testbed.pdf}
+}

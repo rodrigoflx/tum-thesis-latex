@@ -2,6 +2,11 @@
 
 \pgfplotstableread[col sep=comma]{data/sys_lit_rev.csv}\mytable
 
+\def\printonlypositive#1{\ifnum#1>0
+#1
+\fi}
+
+% Change this to one TikZ picture with one legend for all pie charts
 \newcommand{\drawPie}[1]{%
   % Extract the conference name
   \pgfplotstablegetelem{#1}{Venue}\of\mytable
@@ -32,8 +37,8 @@
       color={blue!50!white, red!50!white, green!50!white, orange!50!white, purple!50!white},
       sum=auto,
       radius=1,
-      % <<-- Hide slices (and labels) for zero values:
-      zero slice/.style={draw=none, text=none}
+      text=legend,
+      before number=\printonlypositive,
     ]{
       \valYCSB/YCSB,
       \valSysbench/Sysbench,
@@ -44,8 +49,10 @@
   \end{tikzpicture}
 }
 
-The goal of this thesis is to identify the most widely used frameworks for generating zipfian synthetic data in the systems programming and database community.
-To achieve this, a systematic review of current approaches was conducted with respect to relevancy among high-impact conferences and journals. The following sections describe
+
+The goal of this thesis is to identify the most widely used frameworks for generating zipfian synthetic data in the systems programming and database community and 
+make a comparative evaluation.
+The first step required to achieve this is a systematic review of current approaches. The following sections describe
 \begin{enumerate}
     \item the \textbf{research approach} used to identify the frameworks,
     \item the \textbf{common frameworks} recognized from the search along with short descriptions
@@ -115,16 +122,19 @@ These queries where then run for the conferences and journals listed before on a
     \item Google Scholar
 \end{itemize}
 
+
+\section{Common Frameworks}
+
 On a first phase, the following frameworks were identified among the top 20 results of each conference
 \begin{center}
     \begin{tabular}{|l|}
         \hline
         \textbf{Frameworks} \\ \hline\hline
-        Yahoo! Cloud Serving Benchmark \\ \hline
-        Flexible I/O Tester \\ \hline
+        \ac{YCSB} \\ \hline
+        \ac{FIO} \\ \hline
         Sysbench \\ \hline
-        OLTP-Bench \\ \hline
-        DBGen \\ \hline
+        OLTP-Bench \cite{difallahOLTPBenchExtensibleTestbed2013} \\ \hline
+        DBgen \\ \hline
     \end{tabular}
 \end{center}
 
@@ -138,3 +148,68 @@ These frameworks were then searched with the same keyword matrix and their name 
   \end{tabular}
   \caption{Pie charts for each conference (excluding Web Polygraph and pgBench).}
 \end{figure}
+
+The most popular framework by far is \textbf{YCSB}, then followed by \textbf{Sysbench} along with \textbf{FIO}. Other frameworks are
+not as prevalent, but have appeared in the search results.
+
+\subsection{Yahoo! Cloud Serving Benchmark}
+\ac{YCSB} \cite{cooperBenchmarkingCloudServing2010} is a widely used benchmarking tool for cloud databases. 
+It was developed by \textit{Yahoo! Research} and is now maintained by a community of developers. Its working principle is to generate workloads 
+in a threaded environment, such that the databases can be also tested for concurrent accesses. It's also capable to loading tables with data organized 
+according to different distributions, among which the Zipfian distribution. 
+
+To achieve this, \ac{YCSB} uses a Zipfian generator which is based on the one proposed by Jim Gray \cite{QuicklyGeneratingBillionrecord}. One limiting factor on his original paper is that it's the generated keys are lexographically sorted,
+meaning the first rank (in the case of an integer, 0) is the most frequent. To better reflect real workloads, the keys should be randomly distributed within the range. See figure~\ref{fig:zipfian_comparison_ycsb} for a comparison of the two distributions.
+
+\input{figures/zipfian_YCSB}
+
+To go around this issue, YCSB uses a hashing algorithm to randomly spread the values in the range as well as employing an extended domain to reduce collisions~\cite{cooperBenchmarkingCloudServing2010}. 
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\linewidth]{figures/explanation_ycsb.png}
+  \caption{YCSB does sampling by inversion (1) and then hashes the value to spread in in the available range (2)}
+  \label{fig:explanation_rej_samp}
+\end{figure}
+
+\subsection{Flexible I/O Tester}
+\ac{FIO} \cite{1FioFlexible} is a benchmarking tool for storage systems. Much like YCSB, its purpose is generating workloads following a certain pattern access
+to test a storage system. The workloads can vary in type, including sequential or random and read-only, write-only or mixed. In the case of \textbf{random I/O} , the user is able to 
+to change the access pattern with the goal of simulating both asymetrical and more symmetrical workloads. The underlying distributions include:
+\begin{itemize}
+  \item Zipfian 
+  \item Normal
+  \item Pareto
+  \item Uniform
+\end{itemize}
+
+The generation of a Zipfian distribution works by the same principle as YCSB, meaning:
+\begin{enumerate}
+  \item Generate a zipfian variate using the algorithm proposed by Jim Gray \cite{QuicklyGeneratingBillionrecord}
+  \item Hash the value to spread it in the range
+\end{enumerate}
+
+The same principle applies as in \ref{fig:explanation_rej_samp}
+
+\subsection{Sysbench}
+Sysbench \cite{kopytovAkopytovSysbench2025} is a benchmarking tool for databases as well as storages systems. It works in a manner
+very similar to YCSB, using multi-threading to strain the system with concurrent accesses. The tool is capable of generating synthetic data
+according to different probability distributions, among which the Zipfian distribution.
+
+What sets it apart from the previous ones is that the variate generation uses a different algorithm. The one employed by Sysbench is based on a paper
+by Wolfgang Hörmann \cite{hormannRejectioninversionGenerateVariates1996} and the implementation is based off the Apache Commons Math library \cite{MathCommonsMath}, under the 
+name \textit{RejectionInversionZipfSampler}.
+
+\subsection{OLTP-Bench}
+The OLTP-Bench \cite{difallahOLTPBenchExtensibleTestbed2013} strives to unify different types of benchmarks for evaluating a given \ac{DBMS}. It favours a modular design, enabling very different benchmarks
+to be used under a common interface, which makes it quite extensible. However, it also has enough benchmarks built-in to be used directly, among which:
+\begin{itemize}
+  \item AuctionMark \cite{AuctionMarkOLTPBenchmark}
+  \item \ac{TPC-C}
+  \item \ac{YCSB}
+\end{itemize}
+
+The focus will be rather layed upon the AuctionMark benchmark as it's the one excepting \ac{YCSB} which generates synthetic
+data following a Zipfian distribution. The implementation is based on an inverse transformation sampling sped up by a binary search.
+
+% TODO : Remove DBGen from the paper, it's too vague a concept to be called a framework
