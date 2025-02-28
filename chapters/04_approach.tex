@@ -158,7 +158,7 @@ It was developed by \textit{Yahoo! Research} and is now maintained by a communit
 in a threaded environment, such that the databases can be also tested for concurrent accesses. It's also capable to loading tables with data organized 
 according to different distributions, among which the Zipfian distribution. 
 
-To achieve this, \ac{YCSB} uses a Zipfian generator which is based on the one proposed by Jim Gray \cite{QuicklyGeneratingBillionrecord}. One limiting factor on his original paper is that it's the generated keys are lexographically sorted,
+To achieve this, \ac{YCSB} uses a Zipfian generator which is based on the one proposed by Jim Gray \cite{grayQuicklyGeneratingBillionrecord1994}. One limiting factor on his original paper is that it's the generated keys are lexographically sorted,
 meaning the first rank (in the case of an integer, 0) is the most frequent. To better reflect real workloads, the keys should be randomly distributed within the range. See figure~\ref{fig:zipfian_comparison_ycsb} for a comparison of the two distributions.
 
 \input{figures/zipfian_YCSB}
@@ -185,7 +185,7 @@ to change the access pattern with the goal of simulating both asymetrical and mo
 
 The generation of a Zipfian distribution works by the same principle as YCSB, meaning:
 \begin{enumerate}
-  \item Generate a zipfian variate using the algorithm proposed by Jim Gray \cite{QuicklyGeneratingBillionrecord}
+  \item Generate a zipfian variate using the algorithm proposed by Jim Gray \cite{grayQuicklyGeneratingBillionrecord1994}
   \item Hash the value to spread it in the range
 \end{enumerate}
 

@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+    \begin{loglogaxis}[
+        xlabel={$k$ (log scale)},
+        ylabel={$P(X=k)$ (log scale)},
+        grid=both,
+        thick
+    ]
+    
+    \pgfplotstableread[col sep=comma]{data/zipf_pmf.csv}\datatable  
+    \addplot table[x=k, y=PMF] {\datatable};
+
+    \end{loglogaxis}
+\end{tikzpicture}

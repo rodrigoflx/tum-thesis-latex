@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={$k$},
+        ylabel={$P(X=k)$},
+        grid=both,
+        thick,
+        ymin=0,
+        ymax=0.2,
+        xtick distance=10,
+    ]
+    
+    \pgfplotstableread[col sep=comma]{data/zipf_pmf.csv}\datatable  
+    \addplot table[x=k, y=PMF] {\datatable};
+    \end{axis}
+\end{tikzpicture}
