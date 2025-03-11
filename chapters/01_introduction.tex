@@ -3,94 +3,31 @@
 
 \chapter{Introduction}\label{chapter:introduction}
 
-\section{Section}
+The Zipfian distribution is a power law that has been observed in a wide range of natural and artificial phenomena. 
+It is characterized by the fact that the frequency of an element is inversely proportional to its rank, meaning the position of the element in the sorted list of elements.
+A quick example makes this principle quite clear.
 
-Acronyms must be added in \texttt{main.tex} and are referenced using macros. The first occurrence is automatically replaced with the long version of the acronym, while all subsequent usages use the abbreviation.
-
-E.g. \texttt{\textbackslash ac\{TUM\}, \textbackslash ac\{TUM\}} $\Rightarrow$ \ac{TUM}, \ac{TUM}
-
-For more details, see the documentation of the \texttt{acronym} package\footnote{\url{https://ctan.org/pkg/acronym}}.
-\subsection{Subsection}
-
-See~\autoref{tab:sample}, \autoref{fig:sample-drawing}, \autoref{fig:sample-plot}, \autoref{fig:sample-listing}.
-
-\begin{table}[htpb]
-  \caption[Example table]{An example for a simple table.}\label{tab:sample}
+\begin{figure}[ht!]
   \centering
-  \begin{tabular}{l l l l}
-    \toprule
-      A & B & C & D \\
-    \midrule
-      1 & 2 & 1 & 2 \\
-      2 & 3 & 2 & 3 \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{figure}[htpb]
-  \centering
-  % This should probably go into a file in figures/
-  \begin{tikzpicture}[node distance=3cm]
-    \node (R0) {$R_1$};
-    \node (R1) [right of=R0] {$R_2$};
-    \node (R2) [below of=R1] {$R_4$};
-    \node (R3) [below of=R0] {$R_3$};
-    \node (R4) [right of=R1] {$R_5$};
-
-    \path[every node]
-      (R0) edge (R1)
-      (R0) edge (R3)
-      (R3) edge (R2)
-      (R2) edge (R1)
-      (R1) edge (R4);
-  \end{tikzpicture}
-  \caption[Example drawing]{An example for a simple drawing.}\label{fig:sample-drawing}
+  \input{figures/zipf_example.tex}
+  \caption{Example of a Zipfian distribution}
+  \label{fig:zipf_example} 
 \end{figure}
 
-\input{figures/bucketized_zipf.tex}
+This means that the most frequent element is twice as frequent as the second most frequent element, three times as frequent as the third most frequent element, and so on. 
+This distribution has been observed in a wide range of natural phenomena, such as the distribution of words in natural languages, the distribution of cities by population, among others \cite{mandelbrotNatureFractal1998}. And also within the fields of storage systems research, networking theory
+as well as databases, there has been more compelling evidence that the Zipfian distribution (or more generally, heavy-tailed distributions) is a good model for the distribution of access patterns in these systems \cite{grayQuicklyGeneratingBillionrecord1994, crovellaPerformanceEvaluationHeavy2000,deanTailScale2013}.
 
-\begin{figure}[htpb]
-  \centering
+The focus however of this thesis is on the large-scale generation of Zipfian samples, which are essential for the evaluation of latency and general performance in storage systems and databases. 
+To this end, the state-of-the-art in synthetic workload generation is reviewed and common solutions are identified and evaluated. Parallely, a study of variate generation algorithms is conducted, with a focus on the generation of Zipfian variates.
+This will allow for the comparison in terms of speed and accuracy of common implementations as well as give a baseline for an improved version.
 
-  \pgfplotstableset{col sep=&, row sep=\\}
-  % This should probably go into a file in data/
-  \pgfplotstableread{
-    a & b    \\
-    1 & 1000 \\
-    2 & 1500 \\
-    3 & 1600 \\
-  }\exampleA
-  \pgfplotstableread{
-    a & b    \\
-    1 & 1200 \\
-    2 & 800 \\
-    3 & 1400 \\
-  }\exampleB
-  % This should probably go into a file in figures/
-  \begin{tikzpicture}
-    \begin{axis}[
-        ymin=0,
-        legend style={legend pos=south east},
-        grid,
-        thick,
-        ylabel=Y,
-        xlabel=X
-      ]
-      \addplot table[x=a, y=b]{\exampleA};
-      \addlegendentry{Example A}
-      \addplot table[x=a, y=b]{\exampleB};
-      \addlegendentry{Example B}
-    \end{axis}
-  \end{tikzpicture}
-  \caption[Example plot]{An example for a simple plot.}\label{fig:sample-plot}
-\end{figure}
+The main contributions of this thesis are:
+\begin{itemize}
+  \item A review of the state-of-the-art in synthetic workload generation, with a focus on the generation of Zipfian variates.
+  \item A study of variate generation algorithms, with a focus on the generation of Zipfian variates.
+  \item An implementation of a Zipfian variate generator in C++20, with a focus on performance and algorithmic simplicity
+  \item An evaluation of the performance of the implemented Zipfian variate generator in comparison to existing solutions
+\end{itemize}
 
-\begin{figure}[htpb]
-  \centering
-  \begin{tabular}{c}
-  \begin{lstlisting}[language=SQL]
-    SELECT * FROM tbl WHERE tbl.str = "str"
-  \end{lstlisting}
-  \end{tabular}
-  \caption[Example listing]{An example for a source code listing.}\label{fig:sample-listing}
-\end{figure}
+% TODO Summarize the results of the evaluation and a small conclusion
