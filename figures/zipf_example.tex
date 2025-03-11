@@ -1,0 +1,21 @@
+\begin{tikzpicture}
+  \begin{axis}[
+    ybar,
+    bar width=14pt,
+    enlarge x limits=0.2,
+    symbolic x coords={1,2,3,4,5},
+    xtick=data,
+    xlabel={Rank},
+    ylabel={Frequency},
+    ymin=0, ymax=1.1,
+    nodes near coords,
+    ]
+    \addplot coordinates {
+      (1,1)     
+      (2,0.5)   
+      (3,0.333) 
+      (4,0.25)   
+      (5,0.2)    
+    };
+  \end{axis}
+\end{tikzpicture}
