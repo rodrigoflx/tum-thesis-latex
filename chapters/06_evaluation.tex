@@ -1,0 +1,162 @@
+\chapter{Evaluation}\label{chapter:evaluation}
+
+In the previous chapters, some variate generators included in common frameworks were briefly presented, as well as the underlying 
+algorithms used to sampled the Zipfian distribution. To make a fair comparison, it's necessary to evaluate the accuracy of the distributions generated, 
+as well as the performance of the algorithms used to generate them. Additionally, simplicity of the methods will be considered. 
+
+\begin{itemize}
+    \item \textbf{Accuracy}: The statistical properties of the generated distributions will be compared to the expected values given by the theoretical Zipfian distribution
+    \item \textbf{Performance}: The time taken to generate the distributions will be measured and compared using standard profilling tools as well as custom-written benchmarks
+    \item \textbf{Simplicity}: The complexity of the algorithms used to generate the distributions will be compared, as well as the ease of use of the libraries that implement them
+\end{itemize}
+
+The variate generators considered for this approach are exactly those presented in the previous chapters: \ac{YCSB}, \ac{FIO}, Sysbench and OLTP-Bench, along with
+implementations of the algorithms discussed in \ref{chapter:approach}.
+
+\section{Experimental Setup}
+
+This section describes the hardware and software environment used to conduct the experiments. 
+
+All experiments described in this chapter were conducted on a machine with the specifications detailed in table \ref{tab:computer-specs}.
+The software environment used is detailed in table \ref{tab:software-environment}.
+Since the samplers were implemented in different languages, it's also necessary to detail the versions of the interpreters used to run them.
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\linewidth}{X X X X X}
+        \hline
+        \textbf{CPU Model} & \textbf{Clockspeed} & \textbf{Number of Cores} & \textbf{Memory Capacity} & \textbf{Memory Speed} \\
+        \hline
+        AMD Ryzen 7 5850U & 3.6 GHz & 8 & 16 GB & 3200 MHz \\
+        \hline
+    \end{tabularx}
+    \caption{Computer Specifications}\label{tab:computer-specs}
+\end{table}
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\linewidth}{X X X X}
+        \hline
+        \textbf{Operating System} & \textbf{Kernel Version} & \textbf{Relevant Tools} \\
+        \hline
+        Debian GNU/Linux 12 & 6.1.0-amd64 & perf\cite{PerfLinuxProfilinga}, JMH \cite{AvoidingBenchmarkingPitfalls}, Google Benchmark \cite{GoogleBenchmarkMicrobenchmark}\\ 
+    \end{tabularx}
+    \caption{Software Specification}\label{tab:software-environment}
+\end{table}
+
+
+\begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\linewidth}{X X X}
+        \hline
+        \textbf{Language/Version} & \textbf{Compiler} \textbf{Benchmark/Sampler} \\
+        \hline
+        C++20 & gcc 12.2.0 & Own implementation\\
+        \hline
+        Java 17 & OpenJDK 17.0.8 & YCSB \\
+        \hline
+        C (GNU17) & gcc 12.2.0 & Sysbench, FIO \\
+        \hline
+        Rust & 1.58.0 & None \\
+    \end{tabularx}
+    \caption{Interpreter Versions}\label{tab:interpreter-versions}
+\end{table}
+
+\section{Methodology}
+Evaluations were conducted both for accuracy and performance. In the first case, different criteria will be used
+to give a more rounded view of the quality of the generated distributions. The general flow is: 
+
+\vspace{0.5cm}
+\fbox{
+    \parbox{\linewidth}{
+        \begin{enumerate}
+            \item Generate a Zipfian distribution with the developed tool as explained in \ref{chapter:approach} and store it appropriately
+            \item Use whole-distribution measures, log-graphs and other tools to evaluate and compare the accuracy of the samples
+            \item Repeat the process for different parameters of the Zipfian distribution
+        \end{enumerate}
+    }
+}
+\vspace{0.5cm}
+
+
+For performance, the main measure of interest is throughput - the amount of variates generated in a time interval (e.g. $10M/ms$). Since benchmarking in modern systems is a rife with
+pitfalls \cite{AvoidingBenchmarkingPitfalls,beyerBenchmarkingResourceMeasurement2015}, some precautions should be taken before running the code. More details follow in the coming sections.
+
+
+\subsection{Evaluating accuracy}
+Defining accuracy is domain-dependent and the choice of accuracy measures is conditional on which
+statistical properties are of interest. The starting point will be a general measure that can be used to evaluate how well the generated distributions
+compare to the theoretical one over the whole body of the distribution. This is akin to defining a measure that takes two distributions, which says
+how well one matches the other. Graphically:
+
+\begin{figure}[ht!]
+    \centering
+    \input{figures/accuracy_measure.tex}
+    \caption{Accuracy Measure}\label{fig:accuracy-measure}
+\end{figure}
+
+In the context of research in storage systems and databases, there is a specific interest
+that the hotpaths are accurately represented, as well as the tail of the distribution (\cite{crovellaPerformanceEvaluationHeavy2000,TailScale}), since cold paths could increase latency measures. There are some indications 
+that self-similar distributions only very slowly converge to their theoretical values \cite{crovellaSimulationsHeavyTailedWorkloads2000} when sampling, but there are no concrete guidelines on how to evaluate the accuracy of non-uniform variate generation.
+Some advice follows from \cite{clausetPowerlawDistributionsEmpirical2009}, where the authors suggest that the best way to evaluate the fit of a dataset to a power-law distribution is to use the Kolmogorov-Smirnov test. This is equivalent to the starting
+point explained above. However, as will be explained later, this might have some drawbacks when applied to the considered use case and is the reason other approaches will also be used.
+
+\section{Evaluating Performance}
+As already mentioned, evaluating performance is a tricky business. The main measure of interest is throughput, which is the amount of variates generated 
+in a time interval. On the one hand, it's important not to let undesired factors influence the results, which means microbenchmarking - running only the code 
+routines of interest - is necessary. On the other hand, it's also important to capture realistic scenarios where other processes might be running parallely to 
+the sampling procedure, as well as the fact that the results of sampling will be used as indexes/keys for storage systems and databases. Therefore
+it's important to also benchmark runs that include the necessary I/O present in real-world scenarios.
+
+\subsection{Microbenchmarking}
+Microbenchmarking is the process of measuring the performance of small code snippets, usually in the order of microseconds. The main goal is to measure the performance of 
+the code in isolation, without the influence of other factors. Since the languages of interest are primarily C++, C and Java (see table \ref{tab:interpreter-versions}), 
+the tools used to measure performance will be Google Benchmark \cite{GoogleBenchmarkMicrobenchmark} for C++ and C, and JMH \cite{AvoidingBenchmarkingPitfalls} for Java. 
+For C++ and C applications, the following precations will be taken:
+
+\vspace{0.5cm}
+
+\fbox{
+    \parbox{\linewidth}{
+        \begin{itemize}
+            \item Set specific CPU core for the process
+            \item Disable frequency scaling
+            \item Disable turbo boost
+            \item Limit the available memory to the process
+            \item Warm-up runs 
+        \end{itemize}
+    }
+    \label{microbenchmarking-precautions}
+}
+
+\vspace{0.5cm}
+
+For the Java code, which runs on the Java Virtual Machine, other specific precautions need to be taken, on top of the ones already menntioned:
+
+\vspace{0.5cm}
+
+\fbox{
+    \parbox{\linewidth}{
+        \begin{itemize}
+            \item Disable garbage collection during the benchmark
+            \item Biases of hot paths in the JVM need to be reduced by having warm-up runs between the benchmarks
+        \end{itemize}
+    }
+}
+
+\vspace{0.5cm}
+
+At last, it's important to define the runs. Although the input space includes the support size, it was found that increasing it didn't change generation at all. For brevity, these results won't
+be show here, but can be found in the Appendix. Otherwise, the skewness will be varied between 0.5 and 1.5. 
+The number of samples will be kept constant at $10^6$ for all runs.
+
+
+
+
+
+\subsection{Macrobenchmarking}
+To run macrobenchmarks, the tool explained in Chapter \ref{chapter:approach} will be used to generate the distributions and load them onto a DuckDB instance \cite{raasveldtDuckDBEmbeddableAnalytical2019}. 
+The tool will be run with the same parameters as the microbenchmarking runs, and the time taken to generate the distributions will be measured. With the exception of warm-up runs, 
+the same precautions will be taken as in the microbenchmarking runs (see \ref{microbenchmarking-precautions}). Since the use case of these samplers is to generate keys for storage systems and databases,
+the ranges considered for the support size are between $10^8$ and $10^{10}$, and the skewness will be varied between 0.5 and 1.5.
+
