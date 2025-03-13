@@ -1,3 +1,20 @@
+\newtcolorbox{perfbox}[2][]{enhanced,
+    boxrule=0.5pt,
+    colframe=black,
+    colback=white,
+    sharp corners,
+    fonttitle=\bfseries,
+    attach boxed title to top left={xshift=2mm,yshift*=-\tcboxedtitleheight/2},
+    boxed title style={
+        size=small,
+        colframe=black,
+        colback=black,
+        sharp corners,
+        boxrule=0.5pt
+    },
+    title=#2,#1
+}
+
 \chapter{Evaluation}\label{chapter:evaluation}
 
 In the previous chapters, some variate generators included in common frameworks were briefly presented, as well as the underlying 
@@ -112,7 +129,7 @@ it's important to also benchmark runs that include the necessary I/O present in 
 Microbenchmarking is the process of measuring the performance of small code snippets, usually in the order of microseconds. The main goal is to measure the performance of 
 the code in isolation, without the influence of other factors. Since the languages of interest are primarily C++, C and Java (see table \ref{tab:interpreter-versions}), 
 the tools used to measure performance will be Google Benchmark \cite{GoogleBenchmarkMicrobenchmark} for C++ and C, and JMH \cite{AvoidingBenchmarkingPitfalls} for Java. 
-For C++ and C applications, the following precations will be taken:
+For C++ and C applications, the following precations will be taken (for instruction on how to accomplish the following, see \cite{BenchmarkingTipsLLVM}):
 
 \vspace{0.5cm}
 
@@ -131,28 +148,66 @@ For C++ and C applications, the following precations will be taken:
 
 \vspace{0.5cm}
 
-For the Java code, which runs on the Java Virtual Machine, other specific precautions need to be taken, on top of the ones already menntioned:
+At last, it's important to define the runs. Since what is going to be measured is throughput, we define the duration of a single run to be 1 second. This will be repeated 30 times
+and the average throughput will be calculated. Since the speed is invariant to domain size and distribution parameter, these are kept fixed at $10^8$ and 0.8, respectively.
 
-\vspace{0.5cm}
+For the Google Benchmark, the following command will be used to run the benchmarks (for more details on how to use the tool, see \cite{GoogleBenchmarkMicrobenchmark}):
+\begin{verbatim}
+    ./benchmark --benchmark_repetitions=30 --benchmark_min_warmup_time=1.0
+\end{verbatim}
 
-\fbox{
-    \parbox{\linewidth}{
-        \begin{itemize}
-            \item Disable garbage collection during the benchmark
-            \item Biases of hot paths in the JVM need to be reduced by having warm-up runs between the benchmarks
-        \end{itemize}
-    }
-}
+As a precaution for the sample generation not be optimized away, the function \verb|benchmark::DoNotOptimize| on the results of the computation was used. Similarly for the JMH (more details on \cite{AvoidingBenchmarkingPitfalls,jenkovJMHJavaMicrobenchmark}):
+\begin{verbatim}
+    java -jar target/benchmarks.jar -bm thrpt -wi 10 -i 30 -f 1 -r 1
+\end{verbatim}
 
-\vspace{0.5cm}
+The results depende heavily on which JVM is used, but some common patterns exist to avoid making code be optimized away:              
+\begin{itemize}
+    \item Use the \verb|Blackhole| object to consume the results of the computation
+    \item Use the \verb|@CompilerControl| annotation to avoid inlining
+    \item Use the @\verb|State| annotation to avoid dead code elimination
+\end{itemize}
 
-At last, it's important to define the runs. Although the input space includes the support size, it was found that increasing it didn't change generation at all. For brevity, these results won't
-be show here, but can be found in the Appendix. Otherwise, the skewness will be varied between 0.5 and 1.5. 
-The number of samples will be kept constant at $10^6$ for all runs.
+This procedure yielded the following results:
+\begin{table}[ht!]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        \textbf{Sampler} & \textbf{Average Throughput (M/ms)} & \textbf{Standard Deviation} \\
+        \hline
+        FIO & 26.2 & 0.01 \\
+        \hline
+        ApacheCommons & 27.4 & 0.07 \\
+        \hline
+        YCSB & 29.9 & 0.14 \\
+        \hline
+        Sysbench & 43.6 & 0.15 \\
+        \hline
+    \end{tabular}
+    \caption{Microbenchmarking Results}\label{tab:microbenchmarking-results}
+\end{table}
 
+From the table, we can recognize that the Sysbench sampler is the fastest, which is to be expected given the overhead of the JVM. But to further investigate why this difference is present, a
+run with a profiler is required. Running \verb|perf|\cite{PerfLinuxProfilinga} along with the JMH tool yields the following results for YCSB and ApacheCommons (only relevant lines):
 
+\begin{perfbox}{ApacheCommons}
+\ttfamily
+Baseline: 565.140.532.065 instructions 4,33  insn per cycle \\  
+Sampler: 204.065.670.512  instructions  1,56 insn per cycle   \\
+Sampler: 11.310.090  L1-dcache-load-misses  0,02\% of all L1-dcache accesses 
+\end{perfbox}
 
+\begin{perfbox}{YCSB}
+\ttfamily
+Baseline: 578.884.719.478 instructions 4,43 insn per cycle \\         
+Sampler : 392.403.334.414  instructions 2,92  insn per cycle \\
+Sampler: 339.375.866 L1-dcache-load-misses  0,43 \% of all L1-dcache accesses \\ 
+Sampler: 789.273 L1-icache-load-misses 0,30\% of all L1-icache accesses 
+\end{perfbox}
 
+Given that both the baseline and the actual sample routine have similarly high IPC and low number of data and instruction cache misses, the lower throughput in Java is likely 
+not caused by an inefficient implementatation, but rather by the overhead inherent to the JVM runtime, such as garbage collection, memory management and JIT compilation. These aspects
+won't be explored further, which limits a rigorous conclusion. Nonetheless this points towards the JVM being responsible for the difference in performance.
 
 \subsection{Macrobenchmarking}
 To run macrobenchmarks, the tool explained in Chapter \ref{chapter:approach} will be used to generate the distributions and load them onto a DuckDB instance \cite{raasveldtDuckDBEmbeddableAnalytical2019}. 
