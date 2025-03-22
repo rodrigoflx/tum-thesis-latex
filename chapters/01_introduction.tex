@@ -20,9 +20,7 @@ as well as databases, there has been more compelling evidence that the Zipfian d
 
 The focus however of this thesis is on the large-scale generation of Zipfian samples, which are essential for the evaluation of latency and general performance in storage systems and databases. 
 To this end, the state-of-the-art in synthetic workload generation is reviewed and common solutions are identified and evaluated. Parallely, a study of variate generation algorithms is conducted, with a focus on the generation of Zipfian variates.
-This will allow for the comparison in terms of speed and accuracy of common implementations as well as give a baseline for an improved version.
-
-The main contributions of this thesis are:
+This will allow for the comparison in terms of speed and accuracy of common implementations as well as give a baseline for an improved version. The main contributions of this thesis are:
 \begin{itemize}
   \item A review of the state-of-the-art in synthetic workload generation, with a focus on the generation of Zipfian variates.
   \item A study of variate generation algorithms, with a focus on the generation of Zipfian variates.
@@ -30,4 +28,9 @@ The main contributions of this thesis are:
   \item An evaluation of the performance of the implemented Zipfian variate generator in comparison to existing solutions
 \end{itemize}
 
-% TODO Summarize the results of the evaluation and a small conclusion
+The results show that existing solutions are generally accurate and fast, while one framework, FIO, is incorrect for larger sample sizes. One of the algorithms, \textit{Rejection-Inversion}, 
+is still one of the fastest and the most accurate for generating variates of the target distribution, though table methods could present a new alternative if further optimized. Generally
+implementations based in Java, with around $27$ million variates per second, were between $1.4$ and $1.8$ times slower than their C/C++ counterparts, with around $44$ million variates per second. 
+As such, these implementations can still be recommended for synthetic workload generation. Furthermore accuracy analysis shows that the implementations found
+in common benchmark suites are quite accurate: the ratio between sampled frequencies and theoretical ones are quite close to $1$ for sampel sizes $10$ times the support size while maximal
+absolute error is around $10^{-3}$. It was also found out that the sampled distributions converge quite fast, with $10$ times the sample size being a good rule of thumb for the number of samples needed.
