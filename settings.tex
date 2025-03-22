@@ -13,6 +13,7 @@
   maxnames=4,
   minnames=3,
   maxbibnames=99,
+  citestyle=numeric,
   giveninits,
   uniquename=init]{biblatex}
 \usepackage{graphicx}
@@ -34,10 +35,13 @@
 \usepackage{ifthen}
 \usepackage{tabularx}
 \usepackage{tcolorbox}
+\usepackage{subcaption}
+\usepackage[]{mdframed}
 
 % Setting for pgfplots
 \pgfplotsset{compat=1.18}
 \usepgfplotslibrary{fillbetween}
+\usepgfplotslibrary{statistics}
 \usetikzlibrary{calc}
 \usetikzlibrary{shapes.geometric}
 
@@ -119,5 +123,6 @@
   autogobble,
   keywordstyle=\bfseries\color{TUMBlue},
   stringstyle=\color{TUMAccentGreen},
-  captionpos=b
+  captionpos=b,
+  breaklines=true
 }
