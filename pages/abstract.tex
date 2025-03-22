@@ -1,3 +1,10 @@
 \chapter{\abstractname}
 
 %TODO: Abstract
+This thesis analysis common implementations of sampling algorithms used to generate variates of the Zipfian distribution, with special attention given
+to the use cases found in storage systems and database technology research. Since the late eighties, there has been increased interest in evaluating the performance
+of those systems under very skewed workloads, which are often modeled using the Zipfian distribution. While the theory behind some sampling techniques for the Zipfian distribution is well grounded, 
+practical implementations vary in their accuracy and performance, which can lead to incorrect results in the evaluation of storage systems. This work presents a comprehensive analysis of the most common sampling algorithms 
+found in benchmarking suites across academia and industry, and offers a comparison in terms of precision, speed and applicability to the aforementioned research areas. Parallely, two programs were written to help analysis: a benchmark tool was developed to run experiments on different implementations and
+implementation of different variate generators was done in the programming language C++. Evaluation shows that most found implementations are suitable for the use cases in storage systems and database technology research, but some, such as FIO, are to be avoided. 
+It was also revealed that table lookups might be an interesting alternative to established method, but further investigation is required.
