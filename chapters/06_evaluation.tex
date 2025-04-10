@@ -17,25 +17,44 @@
 
 \chapter{Evaluation}\label{chapter:evaluation}
 
-In the previous chapters, some variate generators included in common frameworks were briefly presented, as well as the underlying 
-algorithms used to sampled the Zipfian distribution. To make a fair comparison, it's necessary to evaluate the accuracy of the distributions generated, 
-as well as the performance of the algorithms used to generate them. Additionally, simplicity of the methods will be considered. 
+In the previous chapters, four common frameworks and their underlying 
+algorithms were presented. To make an accurate and representative comparison, it is necessary to evaluate the 
+accuracy of the distributions generated, as well as the performance of the algorithms used to generate them.
 
 \begin{itemize}
     \item \textbf{Accuracy}: The statistical properties of the generated distributions will be compared to the expected values given by the theoretical Zipfian distribution
-    \item \textbf{Performance}: The time taken to generate the distributions will be measured and compared using standard profilling tools as well as custom-written benchmarks
+    \item \textbf{Performance}: The time taken to generate the distributions will be measured and compared using standard profiling tools as well as custom-written benchmarks
 \end{itemize}
 
-The variate generators considered for this approach are exactly those presented in the previous chapters: \ac{YCSB}, \ac{FIO}, Sysbench and OLTP-Bench (which will be aliased by Rejection-Inversion - Java), along with
-implementations of the algorithms discussed in \ref{chapter:approach}: Rejection and Condensed Table Lookup. Rejection-Inversion wasn't separately implemented since Sysbench already does it.
+The variate generators considered were presented in the previous chapters: \ac{YCSB}, \ac{FIO}, Sysbench, and OLTP-Bench (which will not be further separated from YCSB), along with
+implementations of the algorithms discussed in Chapter \ref{chapter:background}: Rejection and Condensed Table Lookup. Additionally, the \textit{Apache Commons} \cite{MathCommonsMath}
+ implementation of the Rejection-inversion algorithm will be evaluated to compare it to its C counterpart.
+To make comparison easier, the following \textit{aliases} will be used:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|}
+      \hline
+      \textbf{Framework/Algorithm} & \textbf{Alias} \\ \hline\hline
+      YCSB & Approximative (Java) \\ \hline
+      Sysbench & Rejection-Inversion (C) \\ \hline
+      FIO & Approximative (C) \\ \hline
+      OLTPBench & Approximative (Java) \\ \hline
+      Rejection & Rejection (C++) \\ \hline
+      Condensed Table Lookup & Condensed Table Lookup (C++) \\ \hline
+      Apache Commons & Rejection-Inversion (Java) \\ \hline
+    \end{tabular}
+    \caption{Aliased used in Evaluation}
+    \label{tab:aliases}
+\end{table}
+
 
 \section{Experimental Setup}
 
 This section describes the hardware and software environment used to conduct the experiments. All experiments described in this chapter were conducted on a machine with the specifications detailed in table \ref{tab:computer-specs}.
-The software environment used is detailed in table \ref{tab:software-environment}.
-Since the samplers were implemented in different languages, it's also necessary to detail the versions of the interpreters used to run them (see \ref{tab:interpreter-versions}).
+The software environment used can be found in Table \ref{tab:software-environment}, and compiler versions in Table \ref{tab:interpreter-versions}.
 
-\begin{table}[t]
+\begin{table}[h]
     \centering
     \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
         \hline
@@ -47,7 +66,7 @@ Since the samplers were implemented in different languages, it's also necessary 
     \caption{Computer Specifications}\label{tab:computer-specs}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[h]
     \centering
     \begin{tabularx}{\linewidth}{X X X X}
         \hline
@@ -59,7 +78,7 @@ Since the samplers were implemented in different languages, it's also necessary 
 \end{table}
 
 
-\begin{table}[ht!]
+\begin{table}[h]
     \centering
     \begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
         \hline
@@ -67,138 +86,231 @@ Since the samplers were implemented in different languages, it's also necessary 
         \hline
         C++20 & gcc 12.2.0 & Own implementation\\
         \hline
-        Java 17 & OpenJDK 17.0.8 & YCSB \\
+        Java 17 & OpenJDK 17.0.8 & YCSB, OLTP-Bench \\
         \hline
         C (GNU17) & gcc 12.2.0 & Sysbench, FIO \\
         \hline
-        Rust & 1.58.0 & None \\
     \end{tabularx}
-    \caption{Interpreter Versions}\label{tab:interpreter-versions}
+    \caption{Environment Specification}\label{tab:interpreter-versions}
 \end{table}
 
 \section{Methodology}
-Evaluations were conducted both for accuracy and performance. 
-\paragraph{Accuracy} To measure accuracy 2 quantifiable criteria will be used
-to offer well-rounded view of the quality of the generated distributions - the \textbf{Kolmogorov-Smirnov test} and the \textbf{Total Variation Distance} as explained
-previously in \ref{chapter:background}. All of these are well explored in the literature \cite{clausetPowerlawDistributionsEmpirical2009,leydoldErrorDetectionNonUniforma,dengRobustnessNonuniformRandom1992,monahanAccuracyRandomNumber1985}. 
+Three quantifiable criteria will be used to measure \textbf{accuracy} to offer a well-rounded view of the quality of the generated distributions - the \textbf{maximal absolute CDF difference} and the \textbf{sum of absolute PMF differences} as explained
+previously in Chapter \ref{chapter:background}. They are well explored in the literature \cite{clausetPowerlawDistributionsEmpirical2009,leydoldErrorDetectionNonUniforma,dengRobustnessNonuniformRandom1992,monahanAccuracyRandomNumber1985}. 
+Moreover, \textbf{frequency ratio graphs} will be used to evaluate accuracy through the whole \textit{support} of the distribution, allowing to observe biases related to the \textit{rank}.
 
-Besides these numerical quantities, a qualitative approach will be also taken to ensure the measures can be well interpreted. To this end, two visual techniques will also be
-used: a \textbf{log-scaled graph} (see \ref{fig:loglog_zipf}) and a \textbf{frequency ratio analysis}. These help identify systematic deviations as well as deviations correlated 
-with the rank of the indexes. Table \ref{tab:criteria} gives an overview of the criteria used for the evaluation and how each simulation was run.
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{|l|l|l|l|}
-        \hline
-        \textbf{Criteria} & \textbf{Support Size} & \textbf{Skew} & \textbf{Number of Samples} \\
-        \hline
-        Log-scaled graph & $10^6$ & 0.8 & $10^9$ \\
-        \hline
-        Frequency Ratio Analysis & $10^6$ & 0.8 & $10^9$ \\
-        \hline
-        Kolmogorov-Smirnov Test & $10^8$ & 0.8 & $10^4$ to $10^9$ \\
-        \hline
-        Total Variation Distance & $10^8$ & 0.8 & $10^4$ to $10^9$ \\
-        \hline
-    \end{tabular}
-    \caption{Simulation specification for each accuracy criteria}\label{tab:criteria}
-\end{table}
-
-
-\paragraph{Performance} The main measure of interest is \textit{throughput} - the amount of variates generated in a time interval (e.g. $10M/ms$). Since benchmarking in modern systems is a rife with
-pitfalls \cite{AvoidingBenchmarkingPitfalls,beyerBenchmarkingResourceMeasurement2015}, some precautions should be taken before running the code. More details follow in the coming sections.
+The main measure of interest for \textbf{performance} is \textit{throughput} - the number of variates generated in a time interval (e.g. $10 \, \text{million} /ms$). However, measuring this quantity is
+not trivial, as benchmarking in modern systems is unreliable if done inappropriately \cite{AvoidingBenchmarkingPitfalls,beyerBenchmarkingResourceMeasurement2015}. Some precautions 
+are taken to avoid this, which will be explained later in Section \ref{subsec:microbench}.
 
 \section{Evaluating accuracy}
-To first identify which distributions are very wrong, a simple visual inspection is done of the graphs in Figure \ref{fig:pmf-graphs}.  The only distributions which visibly deviate from the expected curve are the FIO and the Condensed Table Lookup. These will be investigated later on. 
+\paragraph{Probability graphs} The first step is to visualize the distributions each generator produces, which allows us to identify patterns and inconsistencies in the
+generated samples.
 
-\include{figures/pmf_graphs.tex}
+\begin{figure}[H]
+    % First row
+    \centering
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/apache.png}
+        \caption{Rejection-Inversion (Java)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/ycsb.png}
+        \caption{Approximative (Java)}
+    \end{subfigure}
+    \\ 
+    % Second row
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/fio.png}
+        \caption{Approximative (C)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/sysbench.png}
+        \caption{Rejection-Inversion (Java)}
+    \end{subfigure}
+    \\    
+    % Third row
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/marsaglia.png}
+        \caption{Condensed Table Lookup (C++)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/pmf/rejection.png}
+        \caption{Rejection (C++)}
+    \end{subfigure}
+    \caption{PMF of all implementations with parameters: $N = 100$M, $\alpha = 0.8$, samples = 1B}
+    \label{fig:pmf-graphs}
+\end{figure}
 
-\paragraph{Log-scaled graphs}These graphs allows for identifaction of systematic biases in data generation (as explained in Chapter \ref{chapter:background}). The y-axis represents the \textit{counts} and the x-axis the 
-\textit{histogram entries} (or "buckets") for all ranks, as shown in figure \ref{fig:log-log}. As was the case before, only FIO and the condensed table lookoup implementations have glaring 
-deviations from the expected straight line.
+There is a noticeable "staircase" effect happening with \textit{Approximative (C)} and \textit{Condensed Table Lookup (C++)}, though the first is more acute due to the non-linearity
+of the \textit{y-axis}. The implementation were evaluated to investigate possible causes.
 
-\input{figures/log_graph.tex}
+The \textit{Approximative (C)} approach uses the same algorithm as its counterpart in Java. What differs between both is the choice of hashing, in both cases posterior to the generation
+of the variate according to the algorithm exposed by Gray \cite{grayQuicklyGeneratingBillionrecord1994}. This points to the choice of hasing function of the \textit{C} version, but a rigorous analysis requires a twofold approach: 
+First, disable hashing and evaluate the resulting distribution. Secondly, exchange the hashing algorithm used, which is $32$-bit based (investigating the source code reveal it is from a \textit{lookup3} from the \textit{Jenkin's} family of hashing functions \cite{jenkinsLookup3}) 
+for a $64$-bit version. While this approach goes in a promissing direction, it was not possible to verify it in this work and is left open.
 
-\paragraph{Frequency Ratio Analysis} 
-To further analyse how the accuracy varies within the domain of the distribution, a frequency ratio analysis is conducted. This is done by plotting the ratio of the empirical frequency to the 
-theoretical frequency (see Equation \ref{eqt:zm_prob}) against the rank of the variate - $\frac{f_{emp}(k)}{f_{theo}(k)}$, where $k$ denotes the rank.
+As for the case of the condensed table lookup, the problems lies in precision limitations of the generated tables - it is limited to $2^{30}$, or rather $5 \cdot 10^9$. A cutoff implies the algorithm
+ cannot compute $f_{theo}(k)$ that differs more than a factor of $10^{-9}$, such that many \textit{ranks} will be "stored" in the same index.  
+Consequently, stretches of the \textit{ranks} in the x-axis will have the same probability, resulting in the lines seen. Such a mechanism explains
+the "staircase" effect seen in Figure \ref{fig:pmf-graphs}. Morever, the absolute difference between consecutive $f_{theo}(k)$ decreases as $k$ increases, as can be observed by the "plateau" lines getting
+longer. Currently, an alternative that avoids the "staircase" effect is not known, and further investigation was not possible.
 
-The graphs in figure \ref{fig:ratio-graphs} show the results for the 6 variate generators.
-Clearly, the more problematic distribution is once again FIO, while other implementations fluctuate around 1.0 - the expected value. Observing the equation \ref{eqt:zm_prob} and the graph
-of \textit{FIO} in figure \ref{fig:pmf_graphs} dismystifies the problem: The probability stays constants for long stretches of the domain, whereas the real distribution ever so decreases. This
-in turn makes the ratio of the empirical to the theoretical frequency increase, before falling off again. 
+\paragraph{Frequency ratio graphs} 
+To further analyse how the accuracy varies with changing \textit{rank} of the \textit{empirical/generated} distributions, the \textbf{frequency ratio graph} was used. 
+It consists of the \textit{rank} $k$ in the \textit{x-axis} and the ratio $\frac{f_{emp}(k)}{f_{theo}(k)}$ in the \textit{y-axis}. The graphs in Figure \ref{fig:ratio-graphs} show the 
+results for the six variate generators. We notice some patterns: the implementations in graph B and F overestimate the first rank, such that $f_{emp}(k) > f_{theo}(k)$; and
+graph C presents an angled striped pattern. A clear cause for the artifact seen in graph B and F could not be verified and is a direction of improvement for this thesis. 
+The second pattern can be explained by same phenomenon found in the \textit{PMF} graph. As the rank $k$ and $f_{emp}(k)$ stays constant 
+for long intervals, $f_{theo}(k)$ increases. Eventually $f_{emp}(k)$ changes and the process begins again.
 
-\input{figures/ratio_graphs.tex}
+\begin{figure}[H]
+    % First row
+    \centering
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/apache.png}
+        \caption{Rejection Inversion (Java)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/ycsb.png}
+        \caption{Approximative (Java)}
+    \end{subfigure}
+    \\
+    % Second row
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/fio.png}
+        \caption{Approximative (C)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/sysbench.png}
+        \caption{Rejection Inversion (C)}
+    \end{subfigure}
+    \\    
+    % Third row
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/marsaglia.png}
+        \caption{Condensed Table Lookup (C++)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.46\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ratio/rejection.png}
+        \caption{Rejection (C++)}
+    \end{subfigure}
 
-\paragraph{Quantitative Criteria} 
-First follows the \textbf{Kolmogorov-Smirnov test} in Figure \ref{fig:ks_graphs} and the \textbf{total variation distance} in Figure \ref{fig:tvd-graphs}. From both graphs,
-we notice that the FIO implementation is the one that deviates the most from the expected values, while the other implementations are very close to the expected values. Since all but FIO
-converge to smaller error values, we can discard the hypothesis that some there are systematic errors and that all implementations are accurate. While there 
-is some evidence that moments (such as mean, variance) of self-similar distributions, such as the Zipfian distribution, only very slowly converge to their theoretical values in a sampling environment \cite{crovellaSimulationsHeavyTailedWorkloads2000}
-, it seems that for the \textit{Rejection Inversion} (Sysbench, AuctionMark), \textit{Rejection} and \textit{approximative} (YCSB, FIO) sampling algorithms, the distributions are very close to the expected values given enough samples. 
-The table \ref{tab:accuracy-results} summarizes the results for sample size = $10^9$.
+    \caption{All distributions have support size $10^6$ and were sampled $10^9$ times}
+    \label{fig:ratio-graphs}
+\end{figure}
 
-\include{figures/ks_graphs}
+\paragraph{Maximal absolute CDF difference} 
+While the previous analysis helped identify and explain big divergences in the behavior of the generators, a more careful comparison should still be conducted. Using metrics and statistical test, 
+it is possible to determine whether an algorithm is accurate up to $90\%$ certainty. The first such metric is  $D_n = \sup_x |P(x) - Q()|$, 
+and it was calculated for each implementation, as seen in Table \ref{tab:ks-results}. We observe that the largest error of the \ac{CDF} of the Approximative (Java) implementation is about fourty times
+bigger than the equivalent for the \textit{Rejection-Inversion} algorithm. This is expected, as the latter is an exact method. On the other hand, the \textit{Approximative (Java)} algorithm and the \textit{Condensed Table Lookup} 
+have high error readings, which is expected given that they are \textit{approximative}. To account for the precise error readings is, however, beyond the scope of this work 
+and requires a sofisticated mathematical analysis.
 
-\include{figures/tvd_graphs}
-
-\begin{table}[t]
+\begin{table}[hbt]
     \centering
     \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
         \hline
-        \textbf{Sampler} & \textbf{Total Variation Distance} & \textbf{Kolmogorov-Smirnov Statistic} \\
+        \textbf{Sampler} & \textbf{Maximal CDF distance} & \textbf{P-value} \\
         \hline
-        FIO (C) & 0.201 & 0.532 \\
+        Approximative (C) & 0.08664 & 0 \\
         \hline
-        Rejection-Inversion (Java) & 0.00963 & 0.0332 \\
+        Approximative (Java) &  0.00086 & 0 \\
         \hline
-        YCSB (Java) & 0.0101 & 0.0338 \\
+        Rejection-Inversion (Java) & 0.00002 & 0.96998 \\
         \hline
-        Sysbench (C) & 0.00963 & 0.0328 \\
+        Rejection-Inversion (C) & 0.00002 & 0.96998 \\
         \hline
-        Condensed Table Lookup (C++) & 0.0164 & 0.135 \\
+        Condensed Table Lookup (C++) & 0.00471 & 0 \\
         \hline
-        Rejection (C++) & 0.031 & 0.0963 \\
+        Rejection (C++) & 0.00139 & 0 \\
         \hline
     \end{tabularx}
-    \caption{Accuracy Results for $10^9$ samples}\label{tab:accuracy-results}
+    \caption{\ac{KS} distance metric for $10^9$ samples}\label{tab:ks-results}
 \end{table}
 
-\paragraph{Analysis of Accuracy} 
-All implementations but FIO and the condensed table lookup present very accurate tendencies when the sample size increases to the scales utilized in benchmarking, which confirm that they are safe to use. It now remains
-to explain why both referenced algorithms are not quite as accurate. 
+From the table, we can conclude that only \textit{Rejection-Inversion} is adequate enough. But as this distance is sensitive to outliers \cite{monahanAccuracyRandomNumber1985}, 
+the \textit{Approximative (Java)} algorithm is not yet discarded.
 
-The FIO implementation likely presents systematic deviations from the expected values due to the hashing function used to preprocess the variates, as the variate generation itself follows exactly Jim Gray's pseudocode.
-The choice of hashing function falls under the umbrella term "Jenkins Hash Function" (more specifically \textit{lookup3}, see \cite{jenkinsLookup3,HashFunctionHash}) to remap all generated variates before they are counted. Doing this, however,
-introduces significant distortions in the distribution, since the aforementioned hash function is not perfect. Furthermore a good hash function should be mostly uniform, the
-effect of which can be seen in the graph above as long intervals of constant probability occur. The drops are explained by the fact that eventually the lower-rank values eventually
-"differ" enough their bit representation so as to be hashed to a different value. 
+\paragraph{Sum of probability differences} 
+To offer a more holistic view of the possible biases in the variate generators, a second metric is introduced - $d_{TV}(P,Q) = \frac{1}{2} \sum_{x \in X} |P(x) - Q(x)|$. As the literature
+does not directly suggest its usage as a test statistic \cite{lehmannLargeSampleOptimality2022}, an arbitrary limit $\epsilon = 0.01$ is chosen: up to $1\%$ of the probability mass of the empirical distribution $F_{emp}$ 
+can deviate from the $F_{theo}$. Table \ref{tab:tvd-results} summarizes the results, which can be read as "The Rejection algorithm has 3\% difference in probability mass compared to the theoretical value". Using 
+the $\epsilon$ criterium defined, we accept \textit{Approximative (Java)} and \textit{Rejection-Inversion (both)}.
 
-The case for the condensed table lookup is more complex. The algorithm is based on a table lookup with precision limited to $2^{30}$, or rather $5 \cdot 10^9$. This means that the algorithm is not able to generate
-probabilities which only differ by a factor of $10^{-9}$ will be mapped to the same value. Testing for equality after this mapping yields that the probabilities are $99.9$ pairwise equal among all ranks, which is more
-than sufficient to account for the long stretches of constant probability seen in Figure \ref{fig:pmf-graphs}. This effects gets amplified the lower the rank, which explains the ever stretching intervals of constant probability. A possible improvement would be 
-to increase the precision of the table lookup, but this would also increase the memory requirements of the algorithm and make it closer to the naive approach.
+\begin{table}[hbt]
+    \centering
+    \begin{tabular}{|l|r|}
+        \hline
+        \textbf{Sampler} & \textbf{Sum of PMF differences} \\
+        \hline
+        Approximative (C) & 0.2010\\
+        \hline
+        Rejection (C++) & 0.0311\\
+        \hline
+        Condensed Table Lookup (C++) & 0.0164 \\
+        \hline
+        Approximative (Java) & 0.0101\\
+        \hline
+        Rejection-Inversion (Java) & 0.0096\\
+        \hline
+        Rejection-Inversion (C) & 0.0096 \\
+        \hline
+    \end{tabular}
+    \caption{TVD metric results for $10^9$ samples}\label{tab:tvd-results}
+\end{table}
 
-\section{Evaluating Performance}
-As already mentioned, evaluating performance is a tricky business. The main measure of interest is \textit{throughput}, which is the amount of variates generated 
-in a time interval. What makes it complicated is controlling for external factors outside of the segment of code being tested. To this end, microbenchmarking is used and
-common techniques are applied to avoid pitfalls \cite{AvoidingBenchmarkingPitfalls,beyerBenchmarkingResourceMeasurement2015}.
+\paragraph{Discussion of accuracy results} Considering both metrics, the \textit{Rejection-inversion} and \textit{Approximative (Java)} implementations will be accepted. The Condensed 
+table lookup does not pass the test, but could be further investigated, as table lookups are quite fast \cite{marsagliaFastGenerationDiscrete2004}. It might seem to be the case 
+that these requirements were very strict, since a $10^{-3}$ difference in the CDF might seen small. However, small deviations could cause significant increases in latency and an example
+of the latency in memory accesses can help illustrate this point. Drawing from relevant literature \cite{pattersonComputerOrganizationDesign2013,TeachYourselfProgramming},
+we have that \textit{L2 Cache} has a latency of around $4$ ns, whereas \textit{DRAM} can be approximate at around $100$ ns. Assuming that $95\%$ of accesses hit the cache and then 
+$5\%$ go to the main memory, it is possible to calculate the expected latency for both the true $F_{theo}$ and a $F_{emp}$ with $d_{TV} = 0.1$. Let $L_{true}$ be the former and $L_{wrong}$ 
+the latter:
+ 
+\begin{equation}
+    \tilde{L}_{true} = \mathop{\mathbb{E}}(L_{true}) = 0.95 \cdot 4 ns \, + 0.05 \cdot 100 ns = 8.8ns
+\end{equation}
 
-\subsection{Microbenchmarking}
-Microbenchmarking is the process of measuring the performance of small code snippets, usually in the order of microseconds. The main goal is to measure the performance of 
-the code in isolation, without the influence of other factors. Since the languages of interest are primarily C++, C and Java (see table \ref{tab:interpreter-versions}), 
-the tools used to measure performance will be Google Benchmark \cite{GoogleBenchmarkMicrobenchmark} for C++ and C, and JMH \cite{AvoidingBenchmarkingPitfalls} for Java. 
-For C++ and C applications, the following precations will be taken (for instruction on how to accomplish the following, see \cite{BenchmarkingTipsLLVM}):
+\begin{equation}
+    \tilde{L}_{wrong} = \mathop{\mathbb{E}}(L_{wrong}) = 0.85 \cdot 4 ns \, + 0.15 \cdot 100 ns = 18.4ns
+\end{equation}
+
+This would create a relative error of $\frac{18.4 - 8.8}{8.8} =  109\%$, which is quite significant. An equivalent calculation for the $\epsilon = 0.01$ used in the analysis yields a relative
+error of only $10\%$, which is much more acceptable. 
+
+\section{Evaluating Performance}\label{subsec:microbench}
+Measuring performance presents difficulties in modern hardware, as controlling for external factors outside of the segment of code being tested is nontrivial.  
+To better isolate the \textit{code to test}, some techniques are applied \cite{AvoidingBenchmarkingPitfalls,beyerBenchmarkingResourceMeasurement2015,BenchmarkingTipsLLVM}, as exposed below:
 
 \vspace{0.3cm}
 \fbox{
     \centering
     \parbox{0.8\linewidth}{
         \begin{itemize}
-            \item Set specific CPU core for the process
+            \item Set specific CPU core for the process generating samples
             \item Disable frequency scaling
             \item Disable turbo boost
-            \item Limit the available memory to the process
+            \item Fix the maximal amount of available memory
             \item Warm-up runs 
         \end{itemize}
     }
@@ -206,51 +318,54 @@ For C++ and C applications, the following precations will be taken (for instruct
 }
 \vspace{0.3cm}
 
-At last, it's important to define the runs. Since what is going to be measured is throughput, we define the duration of a single run to be 1 second. This will be repeated 30 times
-and the average throughput will be calculated. Since the speed is invariant to domain size and distribution parameter, these are kept fixed at $10^8$ and 0.8, respectively.
+The languages of interest are C++, C, and Java; therefore, the benchmarking tools are Google Benchmark \cite{GoogleBenchmarkMicrobenchmark} and JMH \cite{AvoidingBenchmarkingPitfalls}.
+For the latter, some further precautions are required:
 
-For the Google Benchmark, the following command will be used to run the benchmarks (for more details on how to use the tool, see \cite{GoogleBenchmarkMicrobenchmark}):
+\begin{itemize}
+    \item Use the \verb|Blackhole| object to consume the results of the computation
+    \item Use the \verb|CompilerControl| annotation to avoid inlining
+    \item Use the \verb|State| annotation to avoid dead code elimination
+\end{itemize}
+
+At last, it is important to define the runs. Since what is going to be measured is throughput, we define the duration of a single run to be 1 second. This will be repeated thirty times
+and the average throughput will be calculated. Since the speed is invariant to \textit{support size} $N$ and \textit{skew} $\alpha$, these are kept at $10^8$ and $0.8$, respectively.
+
+For Google Benchmark, the following command will be used to run the benchmarks (for more details on how to use the tool, see \cite{GoogleBenchmarkMicrobenchmark}):
 \begin{lstlisting}
     ./benchmark --benchmark_repetitions=30 --benchmark_min_warmup_time=1.0
 \end{lstlisting}
 
-As a precaution for the sample generation not be optimized away, the function \verb|benchmark::DoNotOptimize| on the results of the computation was used. Similarly for the JMH (more details on \cite{AvoidingBenchmarkingPitfalls,jenkovJMHJavaMicrobenchmark}):
+As a precaution for the sample generation not be optimized away, the function \verb|benchmark::DoNotOptimize| was used on the resulting variable. The
+same procedure was reproduced for the JMH (more details on \cite{AvoidingBenchmarkingPitfalls,jenkovJMHJavaMicrobenchmark}), yielding the following command:
 \begin{lstlisting}
     java -jar target/benchmarks.jar -bm thrpt -wi 10 -i 30 -f 1 -r 1
 \end{lstlisting}
 
-The results depende heavily on which JVM is used, but some common patterns exist to avoid making code be optimized away:              
-\begin{itemize}
-    \item Use the \verb|Blackhole| object to consume the results of the computation
-    \item Use the \verb|@CompilerControl| annotation to avoid inlining
-    \item Use the @\verb|State| annotation to avoid dead code elimination
-\end{itemize}
-
-\begin{table}[t]
+\begin{table}[hbt]
     \centering
-    \begin{tabular}{|c|c|c|c|}
+    \begin{tabular}{|l|r|r|}
         \hline
-        \textbf{Sampler} & \textbf{Average Throughput (M/s)} & \textbf{Standard Deviation} \\
+        \textbf{Sampler} & \textbf{Average Throughput (M/s)} & \textbf{Standard Deviation (M/s)} \\
         \hline
-        FIO (C) & 26.2 & 0.01 \\
+        Approximative (C) & 26.2 & 0.01 \\
+        \hline
+        Approximative (Java) & 29.9 & 0.14 \\
         \hline
         Rejection-Inversion (Java) & 27.4 & 0.07 \\
         \hline
-        YCSB (Java) & 29.9 & 0.14 \\
-        \hline
-        Sysbench (C) & 43.6 & 0.15 \\
+        Rejection-Inversion (C) & 43.6 & 0.15 \\
         \hline
         Condensed Table Lookup (C++) & 45.2 & 0.06 \\
         \hline
-        Rejection (C++) & 28.1 & 0.3 \\
+        Rejection (C++) & 28.1 & 0.30 \\
         \hline
     \end{tabular}
     \caption{Microbenchmarking Results}\label{tab:microbenchmarking-results}
 \end{table}
 
-From the table \ref{tab:microbenchmarking-results}, we can recognize that the Condensed Table Lookup sampler is the fastest, which is to be expected given that the main operation is a table lookup,
-while the cost gets offloaded to the initialization. The Sysbench sampler is the second fastest, which is expected given the overhead of the JVM.
-But to further investigate why this difference is present, arun with a profiler is required. Running \verb|perf|\cite{PerfLinuxProfilinga} 
+From Table \ref{tab:microbenchmarking-results}, we can recognize that the Condensed Table Lookup sampler is the fastest. The reason for it is that the lookup is extremely fast
+and the costly part is offloaded to initialization. The Sysbench sampler is the second fastest, which is expected given the overhead of the JVM of its Java counterpart.
+Nonetheless, the difference between Java and C is explored, for which using a profiler is necessary. Running \verb|perf| \cite{PerfLinuxProfilinga} 
 along with the JMH tool yields the following results for YCSB and Rejection-Inversion (Java). Only relevant lines are presented.
 
 \begin{perfbox}{Rejection-Inversion (Java)}
@@ -269,15 +384,5 @@ Sampler: 789.273 L1-icache-load-misses 0,30\% of all L1-icache accesses
 \end{perfbox}
 
 Given that both the baseline and the actual sample routine have similarly high IPC and low number of data and instruction cache misses, the lower throughput in Java is likely 
-not caused by an inefficient implementatation, but rather by the overhead inherent to the JVM runtime, such as garbage collection, memory management and JIT compilation. These aspects
-won't be explored further, which limits a rigorous conclusion. Nonetheless this points towards the JVM being responsible for the difference in performance.
-
-\section{Overall Evaluation}
-
-The results of the evaluation show that the Rejection-Inversion and Sysbench implementations are the most accurate and performant, closely followed by YCSB. 
-The condensed lookup table is the fastest, but also less accurate. While currently the problems explored in the \textit{frequency ratio graphs} exclude it from further consideration, it could be improved by increasing the precision of the table lookup so as to make it competitive
-with the other implementations. The FIO implementation is the least accurate and the slowest, which makes it unsuitable for further use. Lastly, the rejection algorithm is among the slowest and also not particularly accurate, which
-excludes it from any further consideration. All in all, YCSB and Sysbench are the most viable choices for further use, as they are both accurate and performant and cover the use cases of database and file system benchmarks respectively.
-
-
-`'
+not caused by an inefficient implementatation, but rather by the overhead inherent to the JVM runtime. These aspects
+will not be explored further, which limits a rigorous conclusion. Regardless, this points towards the JVM being responsible for the difference in performance.

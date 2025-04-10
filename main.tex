@@ -6,17 +6,16 @@
 %\documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
 \documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
 
-% TODO: change thesis information
 \newcommand*{\getUniversity}{Technische Universität München}
 \newcommand*{\getFaculty}{Informatics}
 \newcommand*{\getDegree}{Informatics}
 \newcommand*{\getSchool}{Computation, Information and Technology}
 \newcommand*{\getTitle}{Comparative Analysis of Widely Used Zipfian Distribution Implementations}
-\newcommand*{\getTitleGer}{Vergleichende Analyse von Implementierungen weit verbreiteten Zipfianverteilung}
+\newcommand*{\getTitleGer}{Vergleichende Analyse von häufig verwendenten Implementierungen der Zipf-Verteilung}
 \newcommand*{\getAuthor}{Rodrigo Felix Forno}
 \newcommand*{\getDoctype}{Bachelor's Thesis}
 \newcommand*{\getSupervisor}{Prof. Dr. Viktor Leis}
-\newcommand*{\getAdvisor}{MSc. Bohyun Lee, MSc. Gabriel Haas}
+\newcommand*{\getAdvisor}{Bohyun Lee M.Sc., Gabriel Haas M.Sc.}
 \newcommand*{\getKeywords}{keyword;another keyword;one more}
 \newcommand*{\getSubmissionDate}{25th of March, 2025}
 \newcommand*{\getSubmissionLocation}{Munich}
@@ -34,7 +33,6 @@
 
 \input{pages/title}
 \input{pages/disclaimer}
-\input{pages/acknowledgments}
 \input{pages/abstract}
 \microtypesetup{protrusion=false}
 \tableofcontents{}
@@ -46,7 +44,8 @@
 \input{chapters/02_background}
 \input{chapters/03_approach}
 \input{chapters/06_evaluation}
-% TODO: add more chapters here
+\input{chapters/future_work}
+\input{chapters/conclusion}
 
 \appendix{}
 
@@ -72,7 +71,10 @@
 	\acro{PRNG}[PRNG]{Pseudo-Random Number Generator}
 	\acro{TVD}[TVD]{Total Variation Distance}
 	\acro{KS}[KS]{Kolmogorov-Smirnov}
-	% TODO: add acronyms
+    \acro{PMF}[PMF]{Probability mass function}
+    \acro{CDF}[CDF]{cumulative density function}
+    \acro{NRMSE}[NRMSE]{Normalized Root-mean-squared error}
+    \acro{OLS}[OLS]{Ordinary Least Squares}
 \end{acronym}
 
 \listoffigures{}

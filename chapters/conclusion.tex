@@ -1,0 +1,18 @@
+\chapter{Conclusion}\label{chapter:conclusion}
+
+This thesis investigated the state-of-the-art in discrete variate generation for Zipfian distributions within benchmarking applications used in storage and database systems research.
+ Four widely-used benchmarking tools were identified and analyzed: YCSB, FIO, Sysbench, and OLTP-Bench, each employing its own implementation of Zipfian variate generation.
+
+In parallel, a survey of relevant literature in variate generation led to the identification of four promising methods: 
+Rejection-Inversion Sampling, Rejection Sampling, Condensed Table Lookup, and Approximative Sampling. 
+Of these, Rejection Sampling and Condensed Table Lookup were implemented, as the others are already in use within the studied tools.
+
+The evaluation, which measured both performance and statistical accuracy, revealed that Sysbench and the 
+Condensed Table Lookup method (both C-based) demonstrated strong performance. However, the latter lacked 
+sufficient accuracy in the evaluated metrics, warranting further investigation before practical adoption. 
+FIO was found to be both inaccurate and among the slowest implementations, making it unsuitable in its current form. 
+Similarly, the Rejection Sampling method performed poorly in terms of both speed and accuracy. 
+
+Based on these findings, this work recommends using YCSB and Sysbench 
+for benchmarking tasks requiring Zipfian distributions. Additionally, 
+updating FIO with an improved hashing function could make it a viable option as well.

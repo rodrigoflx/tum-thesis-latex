@@ -3,34 +3,29 @@
 
 \chapter{Introduction}\label{chapter:introduction}
 
-The Zipfian distribution is a power law that has been observed in a wide range of natural and artificial phenomena. 
-It is characterized by the fact that the frequency of an element is inversely proportional to its rank, meaning the position of the element in the sorted list of elements.
-A quick example makes this principle quite clear.
+The Zipfian distribution is a type of power-law distribution that appears in a wide range of natural and artificial phenomena,
+including the frequency of words in natural language, city populations, and website traffic patterns \cite{mandelbrotNatureFractal1998}.
+In recent years, it has also become highly relevant in the context of storage systems, databases, and network analysis, where operations
+ such as read/write access or packet flows are often heavily skewed \cite{grayQuicklyGeneratingBillionrecord1994, crovellaPerformanceEvaluationHeavy2000}. 
+ In such scenarios, a small subset of elements is accessed disproportionately often, while the majority remain rarely used.
 
-\begin{figure}[ht!]
-  \centering
-  \input{figures/zipf_example.tex}
-  \caption{Example of a Zipfian distribution}
-  \label{fig:zipf_example} 
-\end{figure}
+ This skewed access pattern places specific demands on system design and performance testing. 
+ To emulate real-world workloads, benchmark tools must generate samples that follow the Zipfian distribution—efficiently, 
+ accurately, and at scale. This is especially important when the number of unique elements (i.e., the distribution's support size) is large. 
+ Several tools are commonly used for this purpose, including YCSB, FIO, and Sysbench \cite{NavigatingDatabasePerformance2024}. However, the implementations of 
+ Zipfian variate generation in these tools vary, and have not been comprehensively compared in terms of performance or statistical accuracy. 
+ Deviations in accuracy could introduce biases significant enough to affect benchmark results \cite{TailScale}.
 
-This means that the most frequent element is twice as frequent as the second most frequent element, three times as frequent as the third most frequent element, and so on. 
-This distribution has been observed in a wide range of natural phenomena, such as the distribution of words in natural languages, the distribution of cities by population, among others \cite{mandelbrotNatureFractal1998}. And also within the fields of storage systems research, networking theory
-as well as databases, there has been more compelling evidence that the Zipfian distribution (or more generally, heavy-tailed distributions) is a good model for the distribution of access patterns in these systems \cite{grayQuicklyGeneratingBillionrecord1994, crovellaPerformanceEvaluationHeavy2000,deanTailScale2013}.
+ This thesis addresses that gap. It provides a systematic review of Zipfian variate generation methods in widely-used benchmarking tools 
+ and investigates alternative sampling algorithms drawn from the broader literature on discrete random variate generation. 
+ The main contributions of this work are:
 
-The focus however of this thesis is on the large-scale generation of Zipfian samples, which are essential for the evaluation of latency and general performance in storage systems and databases. 
-To this end, the state-of-the-art in synthetic workload generation is reviewed and common solutions are identified and evaluated. Parallely, a study of variate generation algorithms is conducted, with a focus on the generation of Zipfian variates.
-This will allow for the comparison in terms of speed and accuracy of common implementations as well as give a baseline for an improved version. The main contributions of this thesis are:
 \begin{itemize}
-  \item A review of the state-of-the-art in synthetic workload generation, with a focus on the generation of Zipfian variates.
-  \item A study of variate generation algorithms, with a focus on the generation of Zipfian variates.
-  \item An implementation of a Zipfian variate generator in C++20, with a focus on performance and algorithmic simplicity
-  \item An evaluation of the performance of the implemented Zipfian variate generator in comparison to existing solutions
+  \item A review and comparison of Zipfian distribution implementations in common benchmarking tools.
+  \item The implementation of alternative variate generation methods, drawn from outside the storage and systems community.
+  \item A performance and accuracy evaluation of all methods, with recommendations based on empirical results.
 \end{itemize}
 
-The results show that existing solutions are generally accurate and fast, while one framework, FIO, is incorrect for larger sample sizes. One of the algorithms, \textit{Rejection-Inversion}, 
-is still one of the fastest and the most accurate for generating variates of the target distribution, though table methods could present a new alternative if further optimized. Generally
-implementations based in Java, with around $27$ million variates per second, were between $1.4$ and $1.8$ times slower than their C/C++ counterparts, with around $44$ million variates per second. 
-As such, these implementations can still be recommended for synthetic workload generation. Furthermore accuracy analysis shows that the implementations found
-in common benchmark suites are quite accurate: the ratio between sampled frequencies and theoretical ones are quite close to $1$ for sampel sizes $10$ times the support size while maximal
-absolute error is around $10^{-3}$. It was also found out that the sampled distributions converge quite fast, with $10$ times the sample size being a good rule of thumb for the number of samples needed.
+By examining both existing tools and novel approaches, 
+this work aims to provide guidance for future benchmarking practices and 
+contribute to more reliable and representative performance evaluations.

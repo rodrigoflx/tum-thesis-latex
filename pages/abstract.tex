@@ -1,10 +1,17 @@
 \chapter{\abstractname}
+This thesis analyzes commonly used algorithms for sampling from the Zipfian distribution, 
+with a focus on their application in benchmarking storage systems and database technologies. 
+Since the late 1980s, there has been growing interest in evaluating system performance under skewed workloads—often modeled 
+using the Zipfian distribution. While the theoretical foundations of Zipfian sampling are well established, practical implementations
+ differ significantly in terms of accuracy and efficiency, which can lead to misleading benchmarking results.
 
-%TODO: Abstract
-This thesis analysis common implementations of sampling algorithms used to generate variates of the Zipfian distribution, with special attention given
-to the use cases found in storage systems and database technology research. Since the late eighties, there has been increased interest in evaluating the performance
-of those systems under very skewed workloads, which are often modeled using the Zipfian distribution. While the theory behind some sampling techniques for the Zipfian distribution is well grounded, 
-practical implementations vary in their accuracy and performance, which can lead to incorrect results in the evaluation of storage systems. This work presents a comprehensive analysis of the most common sampling algorithms 
-found in benchmarking suites across academia and industry, and offers a comparison in terms of precision, speed and applicability to the aforementioned research areas. Parallely, two programs were written to help analysis: a benchmark tool was developed to run experiments on different implementations and
-implementation of different variate generators was done in the programming language C++. Evaluation shows that most found implementations are suitable for the use cases in storage systems and database technology research, but some, such as FIO, are to be avoided. 
-It was also revealed that table lookups might be an interesting alternative to established method, but further investigation is required.
+ This work provides a comprehensive comparison of Zipfian variate generators found in widely used benchmarking tools 
+ across academia and industry. It evaluates their precision, speed, and suitability for large-scale system testing. 
+ Two tools were developed to support this analysis: a benchmarking framework and a set of custom variate generators implemented in C++. 
+ Performance results show that Java-based implementations generate approximately $27$ million samples per second, while their C/C++ counterparts 
+ achieve up to $44$ million. In terms of accuracy, implementations using the Rejection-Inversion method produced frequency ratios close to 1 and 
+ a maximal absolute error of approximately $10^{-4}$. Empirically, convergence was observed after generating roughly ten times the size of the distribution’s support.
+
+ The evaluation reveals that most existing implementations are adequate for performance testing, though certain tools - such as FIO - 
+ exhibit significant inaccuracies and should be avoided. Additionally, while Rejection-Inversion remains the most accurate and efficient method, 
+ table lookup approaches demonstrate promising performance and may serve as viable alternatives with further refinement.

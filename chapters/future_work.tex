@@ -1,0 +1,16 @@
+\chapter{Future Work}\label{chap:future-work}
+
+This thesis provided a comprehensive overview of existing methods for sampling from a Zipfian distribution in the context of 
+database and storage systems research. However, further exploration of the broader field of power-law variate generation could 
+uncover additional sampling algorithms that exploit structural properties specific to the Zipfian distribution \cite{powersApplicationsExplanationsZipfs1998a}. 
+
+Another promising avenue for future research lies in table-based methods. Historically, these were often dismissed due 
+to memory limitations \cite{hormannRejectioninversionGenerateVariates1996}. Yet, this thesis has demonstrated their viability 
+in modern environments, despite falling short of delivering a competitive implementation.
+
+Extending the evaluation framework to include other commonly used distributions - such as normal or Pareto - could also prove valuable, 
+as these access patterns are frequently employed in performance benchmarking \cite{cooperBenchmarkingCloudServing2010}. 
+
+Additionally, this work identified a gap in the literature concerning the use of error metrics for evaluating the accuracy of non-uniform variate generators. 
+While it is well-known that digital computation introduces inaccuracies in such processes \cite{radicchiUnderestimatingExtremeEvents2014,leydoldErrorDetectionNonUniforma,monahanAccuracyRandomNumber1985},
+there is little consensus on which metrics are most appropriate. As a result, the metrics chosen in this thesis prioritized interpretability, but future research could benefit from a more rigorous framework for error evaluation.

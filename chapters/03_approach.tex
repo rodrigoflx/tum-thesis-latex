@@ -6,62 +6,22 @@
 #1
 \fi}
 
-% Change this to one TikZ picture with one legend for all pie charts
-\newcommand{\drawPie}[1]{%
-  % Extract the conference name
-  \pgfplotstablegetelem{#1}{Venue}\of\mytable
-  \let\venue\pgfplotsretval
-
-  % Extract the benchmark counts
-  \pgfplotstablegetelem{#1}{YCSB}\of\mytable
-  \let\valYCSB\pgfplotsretval
-
-  \pgfplotstablegetelem{#1}{Sysbench}\of\mytable
-  \let\valSysbench\pgfplotsretval
-
-  \pgfplotstablegetelem{#1}{FIO}\of\mytable
-  \let\valFIO\pgfplotsretval
-
-  \pgfplotstablegetelem{#1}{OLTPBench}\of\mytable
-  \let\valOLTP\pgfplotsretval
-
-  \begin{tikzpicture}[baseline=(current bounding box.north)]
-    % Title for the conference above the pie
-    \node[font=\bfseries] at (0,1.5) {\venue};
-
-    \pie[
-      /tikz/nodes={font=\footnotesize},
-      color={blue!50!white, red!50!white, green!50!white, orange!50!white},
-      sum=auto,
-      radius=1,
-      text=legend,
-      before number=\printonlypositive,
-    ]{
-      \valYCSB/YCSB,
-      \valSysbench/Sysbench,
-      \valFIO/FIO,
-      \valOLTP/OLTPBench
-    }
-  \end{tikzpicture}
-}
-
-
-The goal of this thesis is to identify the most widely used frameworks for generating zipfian synthetic data in the systems programming and database community and 
+This thesis aims to identify the most widely used frameworks for generating synthetic \textit{Zipfian} distributed data in the systems programming and database community and 
 make a comparative evaluation.
 The first step required to achieve this is a systematic review of current approaches. The following sections describe
 \begin{enumerate}
-    \item the \textbf{research approach} used to identify the frameworks,
-    \item the \textbf{common frameworks} recognized from the search along with short descriptions
-    \item the \textbf{popularity and impact} of those tools
-    \item the \textbf{benchmarking module} which will be used to evaluate the frameworks
+    \item The \textbf{research approach} used to identify the frameworks
+    \item The \textbf{common frameworks} recognized from the search along with short descriptions
+    \item The \textbf{popularity and impact} of those tools
+    \item The \textbf{benchmarking module} which will be used to evaluate the frameworks
 \end{enumerate}
 
 \section{Research Approach}
-To identify relevant frameworks used by the systems programming and database community, first the scope of 
-venues and journals was defined. The list is comprised of:
-\begin{center} % Centers the columns as a whole
-    \begin{minipage}{0.8\linewidth} % Optional: restrict width for a nicer look
-      \begin{multicols}{2} % Specify 2 columns
+First, a list of relevant conferences and journals was defined to identify frameworks the systems programming and database community used.
+ The six following conferences were taken into account:
+\begin{center} 
+    \begin{minipage}{0.8\linewidth} 
+      \begin{multicols}{2} 
         \begin{itemize}
           \raggedright
           \item \ac{PVLDB}
@@ -76,16 +36,17 @@ venues and journals was defined. The list is comprised of:
     \end{minipage}
 \end{center}
 
-These conferences were chosen due to their high selectivity and special relevancy for storage technology research, where there is a prevalence of 
-standardized IO benchmarks. The search was conducted broadly following the steps indicated in \parencite{bramerSystematicApproachSearching2018}, as defined below: 
+These conferences were chosen due to their high selectivity and special relevancy for storage technology research, where standardized IO benchmarks are prevalent
+. The search was conducted broadly following the steps indicated in \parencite{bramerSystematicApproachSearching2018}, as defined below: 
 \begin{enumerate}
     \item Word search on keyword search matrix (see table~\ref{tab:keyword_search_matrix})
     \item Identify the frameworks used in the papers
     \item Extended keyword search, this time adding the frameworks identified in the previous step
 \end{enumerate} 
 
-The first step suggests the use of a keyword matrix. This works by choosing appropriate keywords
-which refer to the topic of interest. Then for each such keyword, synonyms are used to improve the accuracy and scope of the search. It's defined below as:
+The first step suggests the use of a \textit{keyword matrix}. Such a matrix can be built by choosing appropriate keywords
+that refer to the topic of interest, so all words should be present in the works searched. 
+Synonyms are used to improve the accuracy and scope of the search. It is defined as follows:
 
 \begin{table}[h!]
     \centering
@@ -103,21 +64,12 @@ which refer to the topic of interest. Then for each such keyword, synonyms are u
     \label{tab:keyword_search_matrix}
   \end{table} 
 
-The columns are the keywords which are boolean OR'ed, whereas the rows are boolean AND'ed.
-This means that at least one word of each column should appear in the search.
-
-These queries where then run for the conferences and journals listed before on an unrestricted timescale. The databases consulted are
-\begin{itemize}
-    \item IEEE Xplore
-    \item ACM Digital Library
-    \item DBLP
-    \item Google Scholar
-\end{itemize}
-
+Given this matrix, the search was conducted on the following academic databases: \textit{IEEE Xplore}, \textit{ACM Digital Library}, \textit{DBLP}, and \textit{Google Scholar}. 
+The results were sorted in \textit{relevance} order, such that well-cited but also relatively new papers appear at the top. An analysis of the findings follows in the next section.
 
 \section{Common Frameworks}
 
-On a first phase, the following frameworks were identified among the top 20 results of each conference
+In the first phase, the following frameworks were identified among the top 20 results of each conference
 \begin{center}
     \begin{tabular}{|l|}
         \hline
@@ -129,73 +81,88 @@ On a first phase, the following frameworks were identified among the top 20 resu
     \end{tabular}
 \end{center}
 
-These frameworks were then searched with the same keyword matrix and their name as a last keyword. This has yielded the following results:
+The previous keyword matrix was extended with the frameworks' names to assert their popularity in the six venues. 
+Pie charts in Figure \ref{fig:popularity_frameworks} show the trends found.
 
-% TODO Fix legends
-\begin{figure}[htb]
-  \centering
-  \begin{tabular}{ccc}
-    \drawPie{0} & \drawPie{1} & \drawPie{2} \\
-    \drawPie{3} & \drawPie{4} & \drawPie{5} \\
-  \end{tabular}
-  \caption{Pie charts for each conference (excluding Web Polygraph and pgBench).}
+\begin{figure}[h]
+    \centering
+    \include{figures/piecharts}
+    \caption{Popularity of the frameworks in the conferences}
+    \label{fig:popularity_frameworks}
 \end{figure}
 
-The most popular framework by far is \textbf{YCSB}, then followed by \textbf{Sysbench} along with \textbf{FIO}. Other frameworks are
-not as prevalent, but have appeared in the search results.
+The most popular framework is \textbf{YCSB}, followed by \textbf{OLTPBench}, as well as \textbf{FIO}. Although this would point to a clear winner in \textbf{YCSB}, 
+it is important to note that the popularity of a framework considered in academic journals might not reflect its actual usage in practice. 
+A search for the frameworks in \textit{GitHub} yielded the table \ref{fig:popularity_frameworks} (as of 22 March 2025), containing
+the number of \textit{starts} given to a code repository. 
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|r|}
+      \hline
+      \textbf{Framework} & \textbf{Stars} \\ \hline\hline
+      YCSB & 5k \\ \hline
+      Sysbench & 6.3k \\ \hline
+      FIO & 5.5k \\ \hline
+      OLTPBench & 0.5k \\ \hline
+    \end{tabular}
+    \caption{Popularity of the frameworks on GitHub}
+    \label{tab:popularity_github}
+\end{table}
 
 \subsection{Yahoo! Cloud Serving Benchmark}
-\ac{YCSB} is a widely used benchmarking tool for cloud databases. 
-It was developed by \textit{Yahoo! Research} and is now maintained by a community of developers. Its working principle is to generate workloads 
-in a threaded environment, such that the databases can be also tested for concurrent accesses. It's also capable to loading tables with data organized 
-according to different distributions, among which the Zipfian distribution. 
+\ac{YCSB} is a widely used benchmarking tool for cloud databases, developed by \textit{Yahoo! Research} and now maintained by a community of developers. 
+The framework generates \textit{workloads} used to test the performance of database systems under stress, by populating tables with entries. How these entries are distributed
+is not fixed and can be chosen by the user. One of the possible distributions is the \textit{Zipfian}, and a submodule in \ac{YCSB} is responsible for generating variates.
 
-To achieve this, \ac{YCSB} uses a Zipfian generator which is based on the one proposed by Jim Gray (see \ref{subsec:jim_gray}). One limiting factor on his original paper is that it's the generated keys are lexographically sorted,
-meaning the first rank (in the case of an integer, 0) is the most frequent. To better reflect real workloads, the keys should be randomly distributed within the range. 
-See figure~\ref{fig:zipfian_comparison_ycsb} for a comparison of the these two cases.
+In order to compute the samples, the benchmark suite uses the algorithm proposed by Gray, as presented before (see \ref{subsec:jim_gray}). One limiting factor in his original paper
+ is that generated keys are lexicographically sorted, e.g. key $0$ has the highest frequency. 
+ The keys should be randomly distributed within the support distribution to better reflect real workloads.
+See Figure \ref{fig:zipfian_comparison_ycsb} for a comparison of these two cases.
 
 \input{figures/zipfian_YCSB}
 
-To go around this issue, YCSB uses a hashing algorithm to randomly spread the values in the range as well as employing an extended domain to reduce collisions~\cite{cooperBenchmarkingCloudServing2010}. 
+To avoid the issue described earlier, YCSB uses a hashing function to randomly spread the values in support of the distribution and employs an extended domain to reduce collisions \cite{cooperBenchmarkingCloudServing2010}. 
 
-\begin{figure}[t]
+\begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{figures/explanation_ycsb.png}
   \caption{YCSB does sampling by inversion (1) and then hashes the value to spread in in the available range (2)}
   \label{fig:explanation_rej_samp}
 \end{figure}
 
-\subsection{Flexible I/O Tester}
-\ac{FIO} \cite{1FioFlexible} is a benchmarking tool for storage systems. Much like YCSB, its purpose is generating workloads following a certain pattern access
-to test a storage system. The workloads can vary in type, including sequential or random and read-only, write-only or mixed. In the case of \textbf{random I/O} , the user is able to 
-to change the access pattern with the goal of simulating both asymetrical and more symmetrical workloads. The underlying distributions include the Zipfian, Normal, Pareto, Uniform distributions.
-
-The generation of a Zipfian distribution works by the same principle as YCSB: first sample a variate using the approximative method and then hash it to spread it in the available range.
-As was the case before, the idea from \ref{fig:explanation_rej_samp} also applies here.
+\subsection{Flexible I/O Tester (FIO)}
+\ac{FIO} \cite{1FioFlexible} is a benchmarking tool for storage systems. Much like YCSB, its purpose is generating workloads following a certain \textit{access pattern}
+to test a storage system. The workloads can vary in type, including sequential or random, and read-only, write-only, or mixed. In the case of \textbf{random I/O}, the user can
+change the workload to simulate both asymmetrical and more symmetrical workloads. The underlying distributions include the \textit{Zipfian}, \textit{Normal},
+ \textit{Pareto}, and \textit{Uniform} distributions.
+ 
+The algorithm used is also the approximative method due to Jim Gray. As with \ac{YCSB}, the same problem arises with the lexographical ordering of the results, to which
+\textit{FIO} resorts to using a hashing function called \textit{lookup3}, in the \textit{Jenkins} collection of hash functions \cite{jenkinsLookup3}.
 
 \subsection{Sysbench}
-Sysbench is a benchmarking tool for databases as well as storages systems. It works in a manner
-very similar to YCSB, using multi-threading to strain the system with concurrent accesses. The tool is capable of generating synthetic data
+Sysbench is a benchmarking tool for databases as well as storage systems. It works 
+very similarly to YCSB, using multi-threading to strain the system with concurrent accesses. The tool can generate synthetic data
 according to different probability distributions, among which the Zipfian distribution.
 
-What sets it apart from the previous ones is that the variate generation uses a different algorithm. The one employed by Sysbench is based on the \textit{rejection-inversion principle} (see \ref{subsec:rejection_inversion})
-and the implementation is based off the Apache Commons Math library \cite{MathCommonsMath}, under the name \textit{RejectionInversionZipfSampler}.
+What sets it apart from the previous is that the variate generation uses a different algorithm. The one employed by Sysbench is based on \textit{Rejection-Inversion sampling} (see Subsection \ref{subsec:rejection_inversion}), 
+and the implementation closely follows that from the Apache Commons Math library \cite{MathCommonsMath} under \textit{RejectionInversionZipfSampler}.
 
 \subsection{OLTP-Bench}
-The OLTP-Bench \cite{difallahOLTPBenchExtensibleTestbed2013} strives to unify different types of benchmarks for evaluating a given \ac{DBMS}. 
-It favours a modular design, enabling very different benchmarks
-to be used under a common interface, which makes it quite extensible. However, it also has enough benchmarks built-in to be used directly, 
-among which AuctionMark \cite{AuctionMarkOLTPBenchmark}, \ac{TPC-C} and \ac{YCSB}. The focus will be rather layed upon the AuctionMark benchmark,
-as it's the one excepting \ac{YCSB} which generates synthetic data following a Zipfian distribution. The implementation is almost directly based off of the one from YCSB, and therefore
-in further analysis, it will be considered as such directly.
+The OLTP-Bench \cite{difallahOLTPBenchExtensibleTestbed2013} strives to unify different benchmarks for evaluating a \ac{DBMS}. 
+It favors a modular design, enabling very different benchmarks
+to be used under a standard interface, which makes it extensible. However, it also has enough benchmarks built-in to be used directly, 
+including AuctionMark \cite{AuctionMarkOLTPBenchmark}, \ac{TPC-C}, and \ac{YCSB}. The focus will be on the AuctionMark benchmark,
+as it is the one excepting \ac{YCSB}, which generates synthetic data following a Zipfian distribution. The implementation is almost directly based on YCSB, thus not
+further differentiated.
 
 \section{Benchmarking Module}
-To evaluate the frameworks, a benchmarking module was developed. It was written in Python and
-allows the user to specify which sample generator to use, as well as the distribution parameters. It's usable from the command line and
+A benchmarking module was developed to evaluate the frameworks. It was written in Python and
+allows the user to specify which sample generator to use, as well as the distribution parameters. It is usable from the command line and
 includes the following commands: \verb|sample_zipf|, to generate a Zipfian distribution, \verb|accuracy_zipf| to calculate accuracy measures
-for one distribution, and lastly \verb|benchmark| to run a specified performance benchmark. It follows a modular design, with the following interfaces:
-\textit{SamplerInterface}, responsible for providing a common wrapper interface to all the sampling algorithms, \textit{StorageInterface}, which defines how the 
-data is to be stored in-memory before processing, and \textit{OutputInterface}, which defines how the data is to be persisted. A UML diagram of the tool is shown in figure~\ref{fig:uml_diagram}.
+for one distribution, and \verb|benchmark| to run a specified performance benchmark. It follows a modular design, with the following interfaces:
+\textit{SamplerInterface}, responsible for providing a common wrapper interface to all the sampling algorithms; \textit{StorageInterface}, which defines how the 
+data is to be stored in memory before processing; and \textit{OutputInterface}, which defines how the data is to be persisted. A UML diagram of the tool is shown in Figure \ref{fig:uml_diagram}.
 \begin{figure}
   \centering
   \includegraphics[scale=0.5]{figures/UML.png}
@@ -203,20 +170,23 @@ data is to be stored in-memory before processing, and \textit{OutputInterface}, 
   \label{fig:uml_diagram}
 \end{figure}
 
+To use the libraries and frameworks described previously, only the necessary code functionality for generating \textit{Zipfian} variates was extracted and packaged
+as \textit{shared libraries} and/or \textit{executables}. These were compiled with optimization turned on to ensure a fair comparison.
+
 \subsection{Commands}
-To generate a sample, the user must use the command \verb|sample_zipf|, such as
+To generate a sample, the command \verb|sample_zipf| is used. For example,
 \begin{lstlisting}
   sample_zipf --generator sysbench --n 1000 --samples 1000 --skew 1.5 --output csv --storage sqlite --buckets 100
 \end{lstlisting}
 
-This will yield a a CSV file with 1000 samples following a Zipfian distribution with skew 1.5 and domain from 0 to 1000.
-The samples will be stored in-memory in a SQLite database with 100 buckets. 
+Running the command will create a CSV file with 1000 samples following a Zipfian distribution with a skew of $1.5$ and a domain from 0 to 1000.
+The samples will be stored in memory in a SQLite database with 100 buckets. 
 
-In order to to calculate the accuracy measures of the distribution implied by a sample stored in a CSV, the user must use the command \verb|accuracy_zipf|, such as
+In order to calculate the accuracy measures of the distribution implied by a sample stored in a CSV, the command \verb|accuracy_zipf| is used, as in
 \begin{lstlisting}
   accuracy_zipf --input_dir /path/to/csv --skew 1.5 --output_dir /path/to/output
 \end{lstlisting}
 
-This method assumes that the directory contains CSV files of results of various sample sizes and domain sizes, but belonging to one generator. 
-It will then generate 3 csv files, with columns for domain size and rows for domains sizes - the first one with the \ac{TVD},
- the second with the \ac{KS} distance and the third with the p-value the \ac{KS} test.
+This method assumes that the directory contains CSV files of results of various sample sizes and domain sizes, belonging to one generator. 
+It will then generate 3 CSV files, with columns for domain size and rows for domain sizes - The first one with the \ac{TVD},
+the second with the \ac{KS} distance, and the third with the p-value of the \ac{KS} test.

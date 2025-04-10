@@ -1,52 +1,73 @@
 \chapter{Background}\label{chapter:background}
 
-Before proceeding with the approach, it's important to do the following:
-\begin{enumerate}
-    \item define the Zipfian distribution
-    \item visually recognize such a distribution
-    \item discuss discrete variate generation
-    \item introduce error metrics used to compare different implementations of these generators
-\end{enumerate}
+The Zipfian distribution (also known as \textit {Zipf's Law}
+ \cite{powersApplicationsExplanationsZipfs1998a}) is a power law; that is, 
+ the relationship between the probability of an event and the quantity that 
+ describes the event 
+is given by an exponential factor \cite{newmanPowerLawsPareto2005}. A simple example of a power law is the relationship of the \textit{area of a square}, $A(x)$, and its 
+\textit{side length}, $x$, given by $A(x) = x^2$. A formal definition is given below, parametrized by what we will
+define as the \textit{skew} - $\alpha$.
 
-\section{The Zipfian Distribution}
-This distributions has had ample impact in the areas of quantitative linguistics and information theory \cite{powersApplicationsExplanationsZipfs1998a}, as well as within computer science in the fields of storage systems and \ac{RDBMS}\cite{grayQuicklyGeneratingBillionrecord1994}. It states that "(...) when a list when 
-a list of measured values is sorted in decreasing order, the value of the $n$-th entry is often approximately inversely proportional to $n$" \cite{ZipfsLaw2025}. Mathematically, this is expressed by
-
-\begin{equation}\label{eqt:zipfs_law}
-    \textbf{word frequency} \propto \frac{1}{\textbf{word rank}}
+\begin{equation}
+    f(x) = C \cdot x^\alpha
+    \label{eq:power-law}
 \end{equation}
 
-The form of interest for this research has an additional parameter $\alpha$, yielding
+\paragraph{Zipf's Law} While a power-law, Zipf's is slightly different
+ than the area of a square in that it is defined as a set of discrete values.
+  For instance, when parsing a text and collecting the number of occurrences of 
+  each word, there are only finitely many words. The same occurs for databases: a key to a table has only a finite number of values. Moreover,
+ the law says that the word rank - a word's position or key in terms of popularity -
+  is inversely proportional to its frequency, given a skew factor. Formally, 
+  it is defined as follows:
 
 \begin{equation}\label{eqt:zm_law}
     \textbf{frequency} \propto \frac{1}{\textbf{rank}^\alpha}
 \end{equation}
 
-Before continuing onto defining the probability more rigorously, some terms are defined more precisely:
+An example is given in Figure \ref{fig:zipf_example}. A text was parsed and a 
+list of top five most popular words has been compiled: "the", "a", "an", "of", "to".
+The frequency is defined to be $freq(word) = \frac{occurences(word)}{\sum_{all words} occurences(words)}$.
+ We observe that the frequencies sum up to $1$, and that the relationship
+between rank and frequency is not linear, but closely resembles an exponential 
+curve. 
+
+\begin{figure}[t]
+  \centering
+  \input{figures/zipf_example.tex}
+  \caption{Example of a Zipfian distribution}
+  \label{fig:zipf_example} 
+\end{figure}
+
+\paragraph{The generalized Zipfian} The previous example and intuition are helpful in 
+understanding the pattern that this law presents, however, it is necessary to define 
+it more deeply. From now on, the following conventions will be used:
 
 \begin{itemize}
-    \item $N$ - the support size of the distribution
-    \item $k$ - the rank of the variate
-    \item $f_{theo}(k, N, \alpha)$ - the theoretical frequency of the $k$-th variate
+    \item $N$ - The support size of the distribution (e.g. \textit{number of different words})
+    \item $k$ - The rank of the \textit{variate}\footnote{this is used interchangebly with \textit{sample}} (e.g. \textit{rank of word})
 \end{itemize}
 
-With this, it' possible to write the following equation for the $PMF$ of the Zipfian distribution:
+Since the aim is generating variates according to this law, it is necessary to
+ treat the \textit{generalized Zipfian} as a statistical distribution. Below follows its
+\ac{PMF}:
 \begin{equation}\label{eqt:zm_prob}
-    f_{theo}(k, N, \alpha) := 
+    f(k, N, \alpha) := 
  \begin{cases} 
       \frac{1}{H_{N,\alpha}} \frac{1}{k^\alpha} & 1 \leq k \leq N \\
       0 & k < 1 \, \text{or} \, N < k 
    \end{cases}
 \end{equation}
 
-where $H_{N,\alpha}$ is defined by the generalized harmonic number
+The term $H_{N,\alpha}$ is defined as the \textit{generalized harmonic number} \cite{newmanPowerLawsPareto2005}, acting as the normalizing constant $C$ 
+seen in \ref{eq:power-law} and ensuring the \ac{PMF} sums to $1$. It is defined as:
 
 \begin{equation}\label{eqt:generalized_hn}
     H_{N, \alpha} = \sum_{k = 1}^{N} \frac{1}{k^\alpha}
 \end{equation}
 
-To give more concrete form to this distribution, we can visualize how the curve looks like for $N = 100$ and with an
-exponent $\alpha = 1$ in Figure \ref{fig:zipf_pmf}.
+As done before with Zipf's Law, the \textit{Zipfian} distribution is plotted in Figure \ref{fig:zipf_pmf} as a line plot, this time with a \textit{support size} of $100$ distinct words. 
+Now that all relevant terms are defined, we turn to the original problem of generating \textit{samples}.
 
 \begin{figure}[t]
     \centering
@@ -55,92 +76,52 @@ exponent $\alpha = 1$ in Figure \ref{fig:zipf_pmf}.
     \label{fig:zipf_pmf}
 \end{figure}
 
-\section{Recognizing a Zipfian distribution}
-One way to visually recognize whether a sample follows a Zipfian distribution or not is by using a plot in log-log scale.
-This is justified by taking equation \ref{eqt:zm_prob} (assuming the probability is always well-defined) and applying
-a log on both sides.
-
-\begin{equation}
-    \log{f(k,N,\alpha)} = -\alpha\log{k} - \log(H_{N,\alpha})
-\end{equation}
-
-Since this is clearly a linear form: $Y = mX + C$, we should expect data that was generated according to a Zipfian distribution
-to have a linear form when transformed with the logarithm. Applying this on the last graph yields Figure \ref{fig:loglog_zipf}.
-
-\begin{figure}[t]
-    \centering
-    \include{figures/zipfian_loglog}\caption{Application of log on data from \ref{fig:zipf_pmf}}\label{fig:loglog_zipf}
-\end{figure}
-
-It's a useful criterium for graphically evaluating if the Zipfian has the expected behaviour through the whole domain. It's not 
-foolproof since other power laws also turn linear when transformed with the Zipfian, but since all generators analyse \textit{try} to generate 
-such a distribution, the problem disappears.
-
 \section{Discrete Variate Generation}
+The goal of \textit{discrete variate generation} is to produce a set
+ $\tilde{X}$ of $m$ variates contained in the \textit{support interval} $[0,N]$, 
+ such that $freq(x_i) \sim Dist(\alpha)$ for $i \in [0,m]$. In other words,
+  the samples follow a given distribution $Dist(\alpha)$. To achieve this, all sampling algorithms use 
+an random \textit{uniform} distribution $U$, and transform  these uniform \textit{samples} into the 
+target samples \cite{kuhlHistoryRandomVariate2017}. As distributions 
+have different properties, some sampling methods are better than others for a particular distribution. Knowing this, the discussion is restricted to the algorithms listed below, as literature
+confirms these methods are better than alternatives (see \cite{devroyeDiscreteUnivariateDistributions1986,kronmalAliasMethodGenerating1979,kuhlHistoryRandomVariate2017}).
 
-Theoretically defining a distribution is one aspect of the work, but the main goal is to generate
-variates which follow a desired distribution. This can be represented by \ref{eq:rvg_definition}.
+\begin{enumerate}
+    \item Rejection Sampling \cite{devroyeDiscreteUnivariateDistributions1986}
+    \item Rejection-Inversion Sampling \cite{hormannRejectioninversionGenerateVariates1996}
+    \item Condensed Table Lookup \cite{marsagliaFastGenerationDiscrete2004}
+    \item Approximative sampling \cite{grayQuicklyGeneratingBillionrecord1994}
+\end{enumerate}
 
-\begin{equation}\label{eq:rvg_definition}
-F(x) = Pr(X \leq x) \quad -\infty < x < \infty
-\end{equation}
-
-The theory for developing variate generators rely on the following assumptions \cite{kuhlHistoryRandomVariate2017}:
-\begin{itemize}
-    \item There exists a perfect uniform $(0,1)$ generator that produces a sequence of \textit{independent} random variables uniformly distributed in $(0,1)$
-    \item Computers can save and manipulate real numbers
-\end{itemize}
-
-Which are directly violated once implementation in digital computers is considered. While not \textit{a priori} a problem, since 
-computers always introduce different types of errors in numerical computations, it's important to consider by \textit{how much} these
-assumptions are violated. Even more so if certain distributions exarcebate problems by this violation \cite{radicchiUnderestimatingExtremeEvents2014}.
-
-There are many possible implementations and theoretical frameworks for creating discrete samplers, be them exact or approximative. Each method has its
-advantages and disadvantages and in the next sections, they will be evaluated. It's important to note, however, that other approaches are possible, but have been omitted since
-the ones present in the table \ref{tab:zipf_sampling} have already compared more favourably to them (see \cite{devroyeDiscreteUnivariateDistributions1986,kronmalAliasMethodGenerating1979,kuhlHistoryRandomVariate2017}).
-A brief discussion of the methods is presented in the next section.
-
-\begin{table}[t]
-    \centering
-    \renewcommand{\arraystretch}{1.3}
-    \setlength{\tabcolsep}{3pt} 
-
-    \begin{tabular}{>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{4cm} >{\raggedright\arraybackslash}p{4cm}}
-        \toprule
-        \textbf{Method} & \textbf{Efficiency} & \textbf{Complexity} & \textbf{Best Use Cases} \\
-        \midrule
-        \textbf{Rejection Sampling \cite{devroyeDiscreteUnivariateDistributions1986}} & Fast ($O(1)$) & Very simple and efficient & General-purpose, simple to implement \\ \hline
-        \textbf{Rejection-Inversion Sampling \cite{hormannRejectioninversionGenerateVariates1996}} & Very fast ($O(1)$, best exact method) & More complex, efficient rejection & High-performance simulations, library implementations \\ \hline
-        \textbf{Marsaglia’s and Tsang's Condensed Table Lookup \cite{marsagliaFastGenerationDiscrete2004}} & Very fast ($O(1)$, optimized for heavy tails) & Moderate, requires precomputed layer boundaries but low memory use & When many samples are needed efficiently, suitable for Zipf–Mandelbrot with infinite support \\ \hline
-        \textbf{Jim Gray's Approximative Method \cite{grayQuicklyGeneratingBillionrecord1994}} & Very fast ($O(1)$) & Doesn't require tables and is very fast but approximative (uses exponential approximation) for the tails & When many samples are needed efficiently and extreme tail precision is not necessary \\
-        \bottomrule
-    \end{tabular}
-    \caption{Summary of methods for sampling from the Zipf-Mandelbrot distribution}
-    \label{tab:zipf_sampling}
-\end{table}
+The first two methods, \textit{Rejection Sampling} and \textit{Rejection-Inversion Sampling}, are \textbf{exact}, whereas the last two, \textit{Condensed Table Lookup}
+and \textit{Approximative Sampling}, are \textbf{approximations}. Consequently, given enough samples, the first two should converge to a \textit{Zipfian} distribution if implemented correctly,
+whereas the latter two might have systematic deviations \cite{leydoldErrorDetectionNonUniforma}. The following subsections will explain each algorithm.
 
 \subsection{Rejection Sampling}\label{subsec:rejection_sampling}
-Rejection Sampling is an exact simulation method to generate observations from a distribution. 
-It's working principle is quite simple: imagine plotting the probability density function of the distribution
-to a large rectangular board. Onto this board, darts are thrown at random (assuming every position is equally as likely)
-and the darts that land under the area of the curve are kept. After throwing enough darts, a clear pattern starts to form
-that resembles the distribution \cite{RejectionSampling2024}. The graphs in Figure \ref{fig:rejection_sampling} illustrate this principle well - blue
-points are accepted whereas red points are rejected using the previously described criterium.
+Rejection sampling works by \textit{rejecting} samples from a \textit{uniform}
+ distribution using a \textit{bounding function} to decide which samples are kept 
+and which are thrown away. A good example is a dartboard, onto which darts are 
+thrown at random. If the target distribution is normal, we draw its contour
+(the \textit{bounding function}) in the dartboard and \textit{accept}
+ the darts that fall below it and \textit{reject} the ones above. 
+The graphs in Figure \ref{fig:rejection_sampling} illustrate this principle well 
+- blue points are accepted darts, whereas red points are the rejected ones.
 
-\begin{figure}[t]
+\begin{figure}[ht]
     \centering
     \includegraphics[width=\linewidth]{figures/rejection_sampling.png}
     \caption{To generate these graphs, a random uniform sample is taken for the x-axis as well as another normalized one for the y-axis.}\label{fig:rejection_sampling}
 \end{figure}
 
-It's important to notice, however, that for this method to work, a \textit{bounding function} is needed. In the case of the Zipf, this could be simply $1/k^{-\alpha}$, which is easier to calculate than
-the true Zipfian distribution. While the bounding function must be comparable to the original function, it must only \textit{be greater up to a constant factor} - this eliminates the need for the
-generalized harmonic number, which is computationally expensive to calculate. A disadvantage of this method is that two random samples are required: one for the x-axis
-, another one for the y-axis.
+Similar to the normal distribution, a \textit{bounding function} is chosen for the \textit{Zipfian}: $1/k^{-\alpha}$. This function is easier to determine than
+the \ac{PMF} in Equation \ref{eqt:zm_prob}, as we skip the computationally expensive normalization constant. The only requirement on this function is that it should 
+\textit{be greater up to a constant factor} than the original \ac{PMF}. A disadvantage of 
+this method is that two random samples are required: one for the x-axis, another for the y-axis.
 
 \subsection{Rejection-Inversion Sampling}\label{subsec:rejection_inversion}
-Rejection-Inversion Sampling due to Hörmann and Derflinger \cite{hormannRejectioninversionGenerateVariates1996}  is a more efficient version of the Rejection Sampling method. It's based on the following observations regarding 
-the naive rejection method:
+Due to Hörmann and Derflinger \cite{hormannRejectioninversionGenerateVariates1996}, this method
+ is a more efficient version of the Rejection Sampling method. 
+It is based on the following observations regarding the naive rejection method:
 \begin{itemize}
     \item A naive rejection algorithm requires two samples to generate the target variate.
     \item The Zipfian is bounded by a monotonically decreasing and convex function, which makes it possible to invert the bounding function.
@@ -154,14 +135,14 @@ These two observations lead to the following principle:
     \parbox{0.83\linewidth}{
         Generate a random variate $u$ from the uniform distribution $U(0,1)$ and invert the bounding function to find the corresponding $x = H^{-1}(u)$.
         Define a bounding area around the nearest integer $k$ (with radius $a$).
-        If $x \geq x_k$ and $x \leq k + a $, accept $X$ as a sample. Otherwise, reject it.\footnotemark
+        Accept $X$ as a sample if $x \geq x_k$ and $x \leq k + a $. Otherwise, reject it.\footnotemark
     }
 }
 \footnotetext{This is a simplified version of the algorithm. For a more detailed explanation, see \cite{hormannRejectioninversionGenerateVariates1996}}
 \vspace{0.3cm}
 
-To visualize the principle used, consider figure \ref{fig:rejection_inversion}: after $k$ was found using the inversion method, the bounding area is defined for radius $a$. 
-This creates an interval of $k - a$ and $k + a$, which is then used to accept or reject the sample $x$. Typically, $a$ is chosen to be $1/2$ \cite{hormannRejectioninversionGenerateVariates1996}.
+To visualize the principle used, consider Figure \ref{fig:rejection_inversion}: After $k$ was found using the inversion method, the bounding area is defined for radius $a$. 
+Therefore an interval beginning at $k - a$ and ending at $k + a$ is defined, then used to accept or reject $x$. Typically, $a$ is chosen to be $1/2$ \cite{hormannRejectioninversionGenerateVariates1996}.
 
 \begin{figure}[t]
     \centering
@@ -169,125 +150,149 @@ This creates an interval of $k - a$ and $k + a$, which is then used to accept or
     \caption{Rejection-Inversion Sampling for a Zipfian distribution}\label{fig:rejection_inversion}
 \end{figure}
 
-\subsection{Marsaglia's and Tsang's Condensed Table Lookup}\label{subsec:condensed_table}
-To generate a variate from any discrete distribution, it's possible to populate with as many occurences of a given key as it occurs in the frequency table and then use a uniform sample to find the corresponding variate. This is called a table method \cite{marsagliaFastGenerationDiscrete2004}.
-As an example, consider figure \ref{fig:lookup_table}: One takes a sample from an uniform \ac{PRNG} and uses it to access an index in the array. 
+\subsection{Condensed Table Lookup}\label{subsec:condensed_table}
+An alternative to exact methods is computing probabilities of a function according to a \ac{PMF} for all \textit{ranks} in the domain and storing them in a table. Since this 
+probability is defined in an interval $[0,1]$, it is possible to take a random \textit{uniform} sample from the interval $[0,1]$ and look up the entry stored at the matching probability.
+This sampling technique is called a \textit{table lookup} method \cite{marsagliaFastGenerationDiscrete2004}. Consider Figure \ref{fig:lookup_table}: 
+A sample from an \textit{uniform} distribution (the implementation is a \ac{PRNG}) is taken and used to find the corresponding index in the table.
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \includegraphics[width=9cm]{figures/marsaglia.png}
     \caption{The table contains the frequency of each index, whereas the array is populated 
-    with as many entries as there occurrencies of each index. The sample "2" was generated, which is used to access the 2nd position in the array}
+    with as many entries as there are occurrences of each index. The sample "2" was generated, which is used to access the second position in the array}
     \label{fig:lookup_table}
 \end{figure}
 
-This approach has a big limitation: the size of the array is $O(n)$, which is not feasible for large support $n$. 
-To circumvent this, Marsaglia and Tsang proposed a \textit{condensed table lookup method}\cite{marsagliaFastGenerationDiscrete2004}, which is based on the following principle:
+One limitation of this approach is the size of the array being in $O(n)$, which is not feasible for large \textit{support} $N$. 
+To circumvent this, Marsaglia and Tsang proposed a \textit{condensed table lookup method} \cite{marsagliaFastGenerationDiscrete2004}, which 
+works based on the principle exposed in the table below.
 
 \vspace{0.2cm}
 \fbox{
     \parbox{0.83\linewidth}{
-        A probability is represented by a floating-point number $p$ with $d$ decimal places. For example, assuming $d = 2$, 
-        the entry $1$ from the last figure has probability $p(1) = 0.28$. To realize this probability, a table of size $10^2$ is required. 
-        The trick to reduce space usage is to break this table down onto $d$ tables instead of using one big table with $100$ entries. 
-        To do this, each probability gets split into $d$ digits $m$, which respectively get $m$ entries in the corresponding table.  Now, generating a uniform integer from the interval $[1,100]$, it's possible to access the correct table and generate the variate.
+        A floating-point number $p$ with $d$ decimal places can be used to represent a probability. For example, assuming $d = 2$, 
+        the entry one from the last figure has probability $p(1) = 0.28$. To realize this probability, a table of size $10^2$ is required. 
+        In order to achieve reasonable precision, a table of size in the magnitude of $10^{10}$ would be required, which would be unfeasable.
+        Alternatively, less space can be used by breaking this table down to $d$ smaller tables. 
+        To do this, each probability gets split into $d$ digits $m$, which respectively get $m$ entries in the corresponding table.  Now, generating a uniform integer from the interval $[1,100]$, it is possible to access the correct table and generate the variate.
         \footnotemark
     }
 }
 \vspace{0.2cm}
 \footnotetext{This is a simplified version of the algorithm. For a more detailed explanation, see \cite{marsagliaFastGenerationDiscrete2004}}
 
-\subsection{Jim Gray's Approximative Method}\label{subsec:jim_gray}
-Jim Gray's method \cite{grayQuicklyGeneratingBillionrecord1994} is a fast approximative way to generate samples from a Zipfian
- distribution. It's based on an approximation of the generalized harmonic number using integration for the first
-most frequent elements and a exponential approximation for the tail. A uniform sample is then mapped onto an index using inversion.
-Figure \ref{fig:jim_gray} makes this idea clear by having two different areas - the first uses the precise discrete values, whereas the second uses an exponential approximation.
+\subsection{Approximation Sampling}\label{subsec:jim_gray}
+Due to Gray \cite{grayQuicklyGeneratingBillionrecord1994}, this method is a fast approximation of the \textit{Zipfian's} tail and the generalized harmonic number.
+The first few probabilities are calculated precisely and normalized by the approximated $H_{N,\alpha}$, while an exponential curve approximates the tail. 
+A uniform sample is then used to generate a \textit{Zipfian} variate using inversion.
+Figure \ref{fig:jim_gray} makes this idea clear by having two different areas along the x-axis. 
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \include{figures/jim_gray.tex}
     \caption{Jim Gray's method for generating samples from a Zipfian distribution}\label{fig:jim_gray}
 \end{figure}
 
-The mathematical description of this method is not quite straighforward and is omitted here. For a more detailed explanation, see \cite{grayQuicklyGeneratingBillionrecord1994,knuthArtComputerProgramming1997}.
+The mathematical description of this method is not quite straightforward and is omitted here. For a more detailed explanation, see \cite{grayQuicklyGeneratingBillionrecord1994,knuthArtComputerProgramming1997}.
+
+\paragraph{Summary} As all generation techniques were described, the question remains how to evaluate them for accuracy compared with 
+the theoretical probability values yielded by the \ac{PMF} in Equation \ref{eqt:zm_prob} - even for \textit{exact} methods. As these methods are developed, some assumptions
+\cite{leydoldErrorDetectionNonUniforma} are taken that might not hold up in the computers used to generate these variates:
+
+\begin{itemize}
+    \item There exists a perfectly uniform generator that produces a sequence of \textit{independent} random variables uniformly distributed in $(0,1)$
+    \item Computers can save and manipulate real numbers
+\end{itemize}
+
+Both of these assumptions cannot be fulfilled. First, the \textit{number generators} used are only pseudo-random \cite{kuhlHistoryRandomVariate2017} and might
+have biases and produce correlated subsequences. For the second, computers only have limited precision, and computing terms such as the \textit{generalized harmonic number} suffer from
+imprecisions caused by \textit{roundups} and \textit{cutoffs} \cite{leydoldErrorDetectionNonUniforma}. Some distributions such as \textit{power laws} worsen this issue \cite{radicchiUnderestimatingExtremeEvents2014}. Therefore,
+we introduce a diverse set of criteria in the following sections for identifying correct implementations and measuring their errors:
+
+\begin{itemize}
+    \item Maximal absolute \ac{CDF} difference
+    \item Sum of absolute \ac{PMF} differences
+\end{itemize}
 
 \section{Error Metrics}
-To begin comparing the different methods introduced previosly, it's necessary to first define the framework used to evaluate them. Drawing from the literature 
-\cite{clausetPowerlawDistributionsEmpirical2009,leydoldErrorDetectionNonUniforma,monahanAccuracyRandomNumber1985}, the following principles are used:
+To compare the different methods introduced previously, it is imperative to first define the framework used to evaluate them. Some principles can be applied from the literature
+\cite{clausetPowerlawDistributionsEmpirical2009,leydoldErrorDetectionNonUniforma,monahanAccuracyRandomNumber1985}:
 
 \begin{mdframed}
         \begin{enumerate}
-            \item Calculate the theoretical distribution for the given parameters: $N$ - support size, and $\alpha$ - skew
-            \item Generate a empirical distribution with the developed tool as explained in chapter \ref{chapter:approach} 
-            \item Use a \textbf{goodness-of-fit test} to compare the generated distribution to the theoretical one
+            \item Calculate the theoretical distribution for the given parameters: $N$ - support size and $\alpha$ - skew.
+            \item Generate an empirical distribution using the algorithms described earlier.
+            \item Use a \textbf{goodness-of-fit test} to compare the generated distribution to the theoretical one.
         \end{enumerate}
         \label{box:accuracy}
 \end{mdframed}
 
-This framework assumes a "black-box" view of the generating processes and treat the generated samples as a dataset that should be fit to the distribution we presume it was sampled from - 
-in our case, the Zipfian. At the heart of this comparison is a \textbf{goodness-of-fit test}, which tells whether the empirical distribution matches the expected distribution closely enough.
-This requires a comparison metric between the two distributions, which can be thought of as a function that takes two distributions and returns a number that quantifies the difference between them. 
-This idea can be made more concrete by looking at the example given in \ref{fig:accuracy-measure}. If the blue curve represents the theoretical distribution and the orange curve the empirical one,
+This framework assumes a "black-box" view of the generating processes and treats the generated samples as a dataset that should be fitted to the theoretical Zipfian. 
+At the center of this comparison is a \textbf{goodness-of-fit test}, which tells whether the empirical distribution matches the expected distribution closely enough.
+As such, the test requires a \textit{comparison metric} between the two distributions - a function that takes two distributions and returns a number that quantifies their dissimilarity. 
+Let us look at the example given in Figure \ref{fig:accuracy-measure}. If the blue curve represents the theoretical distribution and the orange curve is the empirical one,
 the shaded area represents the difference between the two. The smaller this area, the better the empirical distribution fits the theoretical one.
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
     \input{figures/accuracy_measure.tex}
     \caption{Accuracy Measure}\label{fig:accuracy-measure}
 \end{figure}
 
-For the purpose of this work, two measures are going to be used: the \textbf{Kolmogorov-Smirnov} distance and the \textbf{Total Variation} distance \cite{marsagliaEvaluatingKolmogorovsDistribution2003,leydoldErrorDetectionNonUniforma}.
-The former is used in the cited literature previously and has the advantage of being a non-parametric test, which means it doesn't require any assumptions about the underlying distribution.
-The latter is a more general measure of the difference between two probability distributions and is more resistant against outliers.
+For this work, two measures are going to be used: the \textbf{maximal absolute CDF difference}, known in the literature as the \textit{Kolmorgorov-Smirnov} statistic and the 
+\textbf{sum of absolute PMF differences}, known in the literature as the \textit{Total Variation distance} \cite{marsagliaEvaluatingKolmogorovsDistribution2003,leydoldErrorDetectionNonUniforma}.
+The former is widely used for hypothesis testing and has the advantage of being a non-parametric test, flexible enough for a wide range of distributions \cite{KolmogorovSmirnovTest2008}. It is however
+sensitive to outliers. The latter is a more general measure of the difference between two probability distributions and, on the other hand, is more resistant against outliers.
 
-\paragraph{Kolmogorov-Smirnov Test}
-While there is much theory behind the Kolmogorov-Smirnov test, the good-of-fit measure is simply the maximum difference - $D_{n}(P,Q)$ - between the empirical and theoretical
-distributions. A formal definition can be found in Equation \ref{eq:ks-statistic}. It can be understood best with the graph in Figure \ref{fig:ks-test}. This distance 
-measure is compared with a theoretical distribution evaluated for the same parameters (see Equation \ref{eq:ks-cdf}).
-
-\begin{figure}[t]
-    \centering
-    \input{figures/ks-test.tex}
-    \caption{Kolmogorov-Smirnov Test}\label{fig:ks-test}
-\end{figure}
+\paragraph{Maximal absolute CDF difference}
+This measure is defined as the maximum difference - $D_{n}(P,Q)$ - between the empirical and theoretical
+\ac{CDF}. Equation \ref{eq:ks-statistic} formalizes it. It has a nice graphical interpretation as the maximal vertical 
+distance between the two \ac{CDF}s, as seen in Figure \ref{fig:ks-test}.
 
 \begin{equation}
 D_n = \sup_x |P(x) - Q(x)|
 \label{eq:ks-statistic}
 \end{equation}
 
-As explained before, a theoretical distribution is associated with this measure so as to check whether the two distributions truly match.
+\begin{figure}[h]
+    \centering
+    \input{figures/ks-test.tex}
+    \caption{Kolmogorov-Smirnov Test}\label{fig:ks-test}
+\end{figure}
+
+This measure is then compared to a \textit{standard value} given by a probability function called the 
+\textit{Kolmogorov distribution} \cite{marsagliaEvaluatingKolmogorovsDistribution2003}. 
 
 \begin{equation}
     F_n = P[D_n \leq x | \mathcal{H}_0] \quad \text{for} \, x \in [0,1]
     \label{eq:ks-cdf}
 \end{equation}
 
-As this function is quite hard to accurately calculate and approximations are used for big sample sizes. The treatment given is due to Marsaglia (see \cite{marsagliaEvaluatingKolmogorovsDistribution2003})
-and is the choice of implementation for the \textit{SciPy} library \cite{2020SciPy-NMeth} used to generate the metric.
+Due to its computational complexity, an exact form of this distribution is prohibitive for bigger \textit{support sizes} $N$.
+Consequently, approximations are prefered, such as the one given by Marsaglia \cite{marsagliaEvaluatingKolmogorovsDistribution2003}.
+The implementation used in the \textit{SciPy} library follows this work.
 
-paragraph{Total Variation Distance}
-The total variation distance is defined as the sum of all absolute differences in the probability mass function of two distributions. More precisely, 
-given two (discrete) distributions $P$ and $Q$ defined in $X$
+% \paragraph{Why the KS distance test is not perfect} Although the theory for the \textit{KS} distance is well developed, it is not completely adequate for
+%  very large \textit{sample sizes}, as passing the test becomes increasingly hard. This is due to the growing \textit{test power}, 
+%  such that the probability distribution implied in Equation \ref{eq:ks-cdf} approaches 0 with growing sample sizes. 
+%  Therefore, the analysis will limit itself to presenting which methods are \textit{more correct} than others 
+%  and how \textit{wrong} they are in absolute terms. We now turn to the next distance measure.
+
+\paragraph{Sum of absolute PMF differences}
+This distance, also known as \textit{Total Variation Distance (TVD)}, is given by the sum of all absolute differences in the probability mass function of two distributions. More precisely, 
+given two (discrete) distributions, $P$ and $Q$, defined in region $X$:
 
 \begin{equation}
     d_{TV}(P,Q) = \frac{1}{2} \sum_{x \in X} |P(x) - Q(x)|    
     \label{eq:total-variation}
 \end{equation}
 
-It ranges from $0$ to $1$, where $0$ means the distributions are equal and $1$ means they are completely different. Interpreting it as a percentage allows statements as:
-"About $y\%$ of the probability mass differs between the theoretical and empirical distribution". To better understand how this measure looks visually, 
-observe that this measure would be equivalent to the shaded area in figure \ref{fig:accuracy-measure}.
-
-An important property of the total variation distance is that with growing sample sizes,
+The distance ranges from $0$ to $1$, where zero means the distributions are equal, and $1$ means they are completely different. Interpreting it as a percentage allows statements such as:
+"About $y\%$ of the probability mass differs between the theoretical and empirical distribution". Figure \ref{fig:accuracy-measure} was first presented as a general measure,
+but is also, in fact, the \textit{TVD}. An important property of the total variation distance is that with growing sample sizes,
 the distance between the empirical and theoretical distribution should converge to 0 for 
-all $x$ \cite{kengEmpiricalDistributionFunction2016}. Associated to this metric is the \textit{Dvoretzky-Kiefer-Wolfowitz (DKW) inequality}
-\cite{devroyeInequalitiesAlternateDistance1996}, which gives a bound on the probability that the distance between the empirical and theoretical distribution is greater than a certain value. 
-
-\paragraph{Why the tests are not perfect}
-While these tests are widely used in the literature, they are not perfect. This work stops short of making hypothesis test due to the bounding conditions
-of the rejection criteria used. Both metric tests converge fast to 0 with growing sample sizes, which makes rejecting the null hypothesis very hard. 
-Therefore, the analysis will limit itself to presenting which methods are \textit{more correct} than others and how \textit{wrong} they are in absolute terms. 
-For the purpose of this work this approach suffices, as it can be determined how innacurate latency measurements will be compared to the real distribution and estimates can be made
-on how much this will affect the system, e.g. \textit{if the probability of tail indexes is off by $10\%$, latency measures will be off by $5\%$}. Additionally, 
-other techniques will be used to ensure the correctness of the Zipfian implementations.
+all $x$ \cite{kengEmpiricalDistributionFunction2016}.
+ 
+As all required notions and metrics are well defined, a detailed description of the research approach comes next. With it, common 
+benchmarking tools will be identified in the literature and their popularity evaluated. 
